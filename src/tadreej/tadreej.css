@@ -1,0 +1,626 @@
+/* ============================================================
+   Tadreej — Stepped Quran Reciter
+   Green and white, Inter for UI and Scheherazade New for Quran text,
+   pill buttons, soft cards, generous whitespace.
+   Mobile-first, with big touch targets for hands-free use.
+   ============================================================ */
+
+.tadreej-root{
+  --green:        #17834a;   /* primary */
+  --green-deep:   #0f5f36;
+  --green-bright: #2faa5e;
+  --green-soft:   #e7f3ec;   /* tint backgrounds */
+  --lime:         #87c54a;   /* accent */
+
+  --ink:    #16241c;
+  --muted:  #6c7d73;
+  --faint:  #9aa8a0;
+
+  --bg:    #f5f8f5;
+  --card:  #ffffff;
+  --line:  #e6ede8;
+
+  --shadow-sm: 0 1px 2px rgba(16,60,36,.06);
+  --shadow:    0 6px 22px rgba(16,60,36,.08);
+  --shadow-lg: 0 18px 50px rgba(16,60,36,.16);
+
+  --r-card: 20px;
+  --r-pill: 999px;
+
+  --ui: 'Inter', 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --ar: 'Scheherazade New', serif;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+
+.tadreej-root *{ box-sizing: border-box; margin: 0; padding: 0; }
+
+.tadreej-root [hidden]{ display: none !important; }
+
+
+.tadreej-root{ -webkit-text-size-adjust: 100%; }
+
+
+.tadreej-root{
+  font-family: var(--ui);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+
+.tadreej-root button, .tadreej-root input, .tadreej-root select{ font-family: inherit; font-size: inherit; color: inherit; }
+
+.tadreej-root button{ cursor: pointer; border: none; background: none; }
+
+.tadreej-root svg{ width: 100%; height: 100%; fill: currentColor; display: block; }
+
+
+.tadreej-root .app{
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-top) + 8px) 16px calc(var(--safe-bot) + 16px);
+}
+
+
+/* ───────── Header ───────── */
+.tadreej-root .topbar{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 4px 18px;
+}
+
+.tadreej-root .brand{ display: flex; align-items: center; gap: 11px; }
+
+.tadreej-root .brand-mark{
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(150deg, var(--green-bright), var(--green));
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 3px; padding: 7px; box-shadow: var(--shadow-sm);
+}
+
+.tadreej-root .brand-mark span{ width: 4px; background: #fff; border-radius: 2px; opacity: .95; }
+
+.tadreej-root .brand-mark span:nth-child(1){ height: 38%; }
+
+.tadreej-root .brand-mark span:nth-child(2){ height: 64%; }
+
+.tadreej-root .brand-mark span:nth-child(3){ height: 100%; }
+
+.tadreej-root .brand-name{
+  font-weight: 700; font-size: 18px; letter-spacing: -.02em;
+  display: flex; flex-direction: column; line-height: 1.05;
+}
+
+.tadreej-root .brand-sub{ font-weight: 500; font-size: 11px; color: var(--muted); letter-spacing: .02em; }
+
+
+.tadreej-root .screen{ flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+/* Controls wrapper is invisible by default — children flow into .screen as
+   before. It only becomes a real box (the right column) on wide desktop. */
+.tadreej-root .rail{ display: contents; }
+
+
+/* ───────── Cards ───────── */
+.tadreej-root .card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+}
+
+
+/* ───────── Now Playing ───────── */
+.tadreej-root .now{
+  padding: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center;
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--green-soft), transparent 60%),
+    var(--card);
+}
+
+.tadreej-root .page-pill{
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--green); color: #fff;
+  border-radius: var(--r-pill);
+  padding: 9px 16px 9px 18px;
+  font-weight: 600; box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, background .15s ease;
+}
+
+.tadreej-root .page-pill:active{ transform: scale(.97); background: var(--green-deep); }
+
+.tadreej-root .page-pill__label{ font-size: 13px; opacity: .85; letter-spacing: .03em; text-transform: uppercase; }
+
+.tadreej-root .page-pill__num{ font-size: 20px; font-weight: 700; line-height: 1; }
+
+.tadreej-root .page-pill__caret{ font-size: 11px; opacity: .8; }
+
+
+.tadreej-root .now__surah{ display: flex; flex-direction: column; gap: 2px; }
+
+.tadreej-root .now__surah-ar{ font-family: var(--ar); font-size: 24px; font-weight: 700; line-height: 1.2; }
+
+.tadreej-root .now__surah-en{ font-size: 13px; color: var(--muted); font-weight: 500; }
+
+
+.tadreej-root .now__ayah{
+  font-family: var(--ar);
+  font-size: clamp(26px, 8vw, 38px);
+  line-height: 1.95;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 4px 2px;
+  min-height: 1.95em;
+  width: 100%;
+  word-spacing: .04em;
+}
+
+.tadreej-root .now__progress{ width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 9px; margin-top: 2px; }
+
+
+/* ── Segmented verse meter ──
+   One segment per ayah. The whole step's scope lights up; the verse sounding
+   right now grows taller and glows. Base colour is a lime→deep-green gradient
+   set per segment (--c) in JS, so even fully lit the row reads as a gradient. */
+.tadreej-root .meter{ display: flex; align-items: center; gap: 3px; width: 100%; height: 12px; }
+
+.tadreej-root .meter__seg{
+  flex: 1 1 0; min-width: 0;
+  height: 7px; border-radius: 3px;
+  background: var(--c, var(--green));
+  opacity: .16;
+  transition: opacity .25s ease, height .2s ease, box-shadow .25s ease;
+}
+
+.tadreej-root .meter__seg.is-step{ opacity: .42; }
+                 /* in this step, still ahead */
+.tadreej-root .meter__seg.is-recited{ opacity: 1; }
+                   /* already recited this pass */
+.tadreej-root .meter__seg.is-active{                                 /* the verse sounding now */
+  opacity: 1; height: 12px; min-width: 7px; border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.75), 0 3px 10px var(--c);
+  position: relative; z-index: 1;
+}
+
+.tadreej-root .now__step{ font-size: 12.5px; font-weight: 600; color: var(--muted); white-space: nowrap; text-align: center; }
+
+
+/* ───────── Transport ───────── */
+.tadreej-root .transport{ display: flex; align-items: center; justify-content: center; gap: 22px; padding: 4px 0; }
+
+.tadreej-root .round-btn{
+  width: 62px; height: 62px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--green-deep); box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s ease;
+}
+
+.tadreej-root .round-btn svg{ width: 26px; height: 26px; }
+
+.tadreej-root .round-btn:active{ transform: scale(.93); }
+
+
+.tadreej-root .play-btn{
+  width: 92px; height: 92px; border-radius: 50%;
+  background: linear-gradient(155deg, var(--green-bright), var(--green));
+  color: #fff; box-shadow: 0 12px 30px rgba(23,131,74,.36);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s ease;
+}
+
+.tadreej-root .play-btn svg{ width: 42px; height: 42px; margin-left: 3px; }
+
+.tadreej-root .play-btn[data-playing="true"] svg{ margin-left: 0; }
+
+.tadreej-root .play-btn:active{ transform: scale(.95); }
+
+
+/* ───────── Mode toggle ───────── */
+.tadreej-root .mode{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r-pill); padding: 5px; box-shadow: var(--shadow-sm);
+}
+
+.tadreej-root .mode__btn{
+  border-radius: var(--r-pill); padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  color: var(--muted); transition: background .18s ease, color .18s ease;
+}
+
+.tadreej-root .mode__btn strong{ font-size: 14.5px; font-weight: 600; }
+
+.tadreej-root .mode__btn small{ font-size: 11px; opacity: .9; }
+
+.tadreej-root .mode__btn.is-active{ background: var(--green); color: #fff; box-shadow: var(--shadow-sm); }
+
+.tadreej-root .mode__btn.is-active small{ opacity: .85; }
+
+
+/* ───────── Settings ───────── */
+.tadreej-root .settings{ overflow: hidden; }
+
+.tadreej-root .settings summary{
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; font-weight: 600;
+}
+
+.tadreej-root .settings summary::-webkit-details-marker{ display: none; }
+
+.tadreej-root .settings summary::after{
+  content: "▾"; color: var(--faint); font-size: 13px;
+  transition: transform .2s ease; margin-left: 8px;
+}
+
+.tadreej-root .settings[open] summary::after{ transform: rotate(180deg); }
+
+.tadreej-root .settings__hint{ color: var(--green); font-weight: 600; font-size: 13px; margin-left: auto; margin-right: 4px; }
+
+.tadreej-root .settings__grid{
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 4px 18px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.tadreej-root .field{ display: flex; flex-direction: column; gap: 6px; }
+
+.tadreej-root .field > span{ font-size: 13px; font-weight: 600; color: var(--ink); }
+
+.tadreej-root .field em{ font-style: normal; color: var(--faint); font-weight: 500; }
+
+.tadreej-root .field select, .tadreej-root .field input[type="number"]{
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; background: var(--bg);
+  font-weight: 500; -webkit-appearance: none; appearance: none;
+}
+
+.tadreej-root .field select:focus, .tadreej-root .field input:focus{ outline: 2px solid var(--green-bright); outline-offset: 1px; }
+
+.tadreej-root .field--row{ flex-direction: row; align-items: center; gap: 12px; }
+
+.tadreej-root .field--row span{ font-size: 13px; font-weight: 500; }
+
+.tadreej-root .field--row input[type="checkbox"]{
+  width: 22px; height: 22px; accent-color: var(--green); flex: none;
+}
+
+
+/* ───────── Footer ───────── */
+.tadreej-root .foot{
+  margin-top: auto; padding: 18px 6px 4px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11.5px; color: var(--faint);
+}
+
+.tadreej-root .foot__dua{ font-family: var(--ar); font-size: 16px; color: var(--green); }
+
+.tadreej-root .foot__credits{ display: flex; flex-direction: column; gap: 2px; }
+
+.tadreej-root .foot a{ color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+
+/* ───────── Page picker sheet ───────── */
+.tadreej-root .sheet{ position: fixed; inset: 0; z-index: 40; }
+
+.tadreej-root .sheet[hidden]{ display: none; }
+
+.tadreej-root .sheet__backdrop{ position: absolute; inset: 0; background: rgba(13,40,26,.42); backdrop-filter: blur(2px); animation: fade .2s ease; }
+
+.tadreej-root .sheet__panel{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-width: 480px; margin: 0 auto;
+  background: var(--card); border-radius: 26px 26px 0 0;
+  padding: 10px 20px calc(var(--safe-bot) + 24px);
+  box-shadow: var(--shadow-lg);
+  animation: rise .26s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes fade { from { opacity: 0; }
+ }
+
+@keyframes rise { from { transform: translateY(100%); }
+ }
+
+.tadreej-root .sheet__grip{ width: 40px; height: 5px; border-radius: 999px; background: var(--line); margin: 4px auto 14px; }
+
+
+/* ── Page / Range / Surah tabs ──
+   Auto columns, so the strip takes however many tabs it is given. */
+.tadreej-root .seg-tabs{
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px;
+  background: var(--green-soft); border-radius: var(--r-pill);
+  padding: 4px; margin-bottom: 18px;
+}
+
+/* The same strip used inside a pane, for the range's end mode. */
+.tadreej-root .seg-tabs--sub{ margin-bottom: 12px; background: var(--bg); }
+
+.tadreej-root .seg-tabs--sub .seg-tab{ font-size: 13.5px; padding: 8px 6px; }
+
+.tadreej-root .seg-tab{
+  border-radius: var(--r-pill); padding: 9px 8px;
+  font-weight: 600; font-size: 14px; color: var(--green-deep);
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+.tadreej-root .seg-tab.is-active{ background: var(--card); color: var(--green); box-shadow: var(--shadow-sm); }
+
+.tadreej-root .sheet__pane[hidden]{ display: none; }
+
+
+/* ── Surah search + list ── */
+.tadreej-root .surah-search{
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; background: var(--bg);
+  transition: border-color .15s ease;
+}
+
+.tadreej-root .surah-search:focus-within{ border-color: var(--green-bright); }
+
+.tadreej-root .surah-search__ic{ width: 18px; height: 18px; flex: none; color: var(--faint); }
+
+.tadreej-root .surah-search input{
+  flex: 1; min-width: 0; border: none; background: transparent;
+  padding: 12px 0; font-weight: 500; -webkit-appearance: none; appearance: none;
+}
+
+.tadreej-root .surah-search input:focus{ outline: none; }
+
+.tadreej-root .surah-hint{ font-size: 12px; color: var(--faint); margin: 8px 2px 10px; }
+
+
+.tadreej-root .surah-list{
+  max-height: min(48vh, 420px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 4px;
+  margin: 0 -6px; padding: 2px 6px;
+}
+
+.tadreej-root .surah-row{
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 10px 12px; border-radius: 14px;
+  background: var(--bg); border: 1px solid transparent;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.tadreej-root .surah-row:active{ background: var(--green-soft); }
+
+.tadreej-root .surah-row.is-current{ border-color: var(--green-bright); background: var(--green-soft); }
+
+.tadreej-root .surah-row__no{
+  flex: none; width: 30px; height: 30px; border-radius: 9px;
+  background: var(--green); color: #fff; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.tadreej-root .surah-row__txt{ flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+
+.tadreej-root .surah-row__name{ font-weight: 600; font-size: 14.5px; color: var(--ink); }
+
+.tadreej-root .surah-row__meta{ font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.tadreej-root .surah-row__ar{
+  flex: none; font-family: var(--ar); font-size: 19px; color: var(--green-deep);
+  max-width: 42%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tadreej-root .surah-empty{ text-align: center; color: var(--muted); font-size: 13.5px; padding: 24px 0; }
+
+
+.tadreej-root .pagejump{ display: flex; align-items: center; justify-content: center; gap: 14px; }
+
+.tadreej-root .step-btn{
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--green-soft); color: var(--green-deep);
+  font-size: 30px; font-weight: 600; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .1s ease;
+}
+
+.tadreej-root .step-btn:active{ transform: scale(.92); }
+
+.tadreej-root .pagejump__input{
+  width: 120px; text-align: center;
+  font-size: 40px; font-weight: 700; letter-spacing: -.02em;
+  border: none; border-bottom: 2px solid var(--line);
+  background: transparent; padding: 6px 0; -webkit-appearance: none; appearance: none;
+}
+
+.tadreej-root .pagejump__input:focus{ outline: none; border-bottom-color: var(--green-bright); }
+
+.tadreej-root .pagejump__input::-webkit-outer-spin-button, .tadreej-root .pagejump__input::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+
+.tadreej-root .pagejump__meta{ text-align: center; color: var(--muted); font-size: 13.5px; font-weight: 500; margin: 12px 0 18px; }
+
+
+/* ── Range panel ── */
+.tadreej-root .range-cap{
+  text-align: center; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 8px;
+}
+
+.tadreej-root .range-to{ display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
+
+.tadreej-root .step-btn--sm{ width: 42px; height: 42px; font-size: 24px; }
+
+.tadreej-root .pagejump__input--sm{ width: 92px; font-size: 30px; }
+
+.tadreej-root .range-preview{
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--green-soft); border-radius: 14px;
+  padding: 12px 14px; margin: 14px 0 12px; text-align: center;
+}
+
+.tadreej-root .range-preview strong{ font-size: 15px; font-weight: 700; color: var(--green-deep); }
+
+.tadreej-root .range-preview span{ font-size: 12.5px; font-weight: 500; color: var(--muted); }
+
+.tadreej-root .range-warn{
+  font-size: 12px; line-height: 1.45; color: var(--muted);
+  border-left: 2px solid var(--lime); padding-left: 10px; margin: 0 2px 16px;
+}
+
+
+.tadreej-root .quick{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; min-height: 4px; }
+
+.tadreej-root .quick__chip{
+  border: 1px solid var(--line); background: var(--bg);
+  border-radius: var(--r-pill); padding: 7px 14px;
+  font-size: 13px; font-weight: 600; color: var(--green-deep);
+}
+
+.tadreej-root .quick__chip:active{ background: var(--green-soft); }
+
+
+.tadreej-root .sheet__actions{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.tadreej-root .primary-btn{
+  border-radius: 14px; padding: 16px; font-weight: 600; font-size: 15px;
+  background: var(--green-soft); color: var(--green-deep);
+  transition: transform .1s ease, filter .15s ease;
+}
+
+.tadreej-root .primary-btn:active{ transform: scale(.98); }
+
+.tadreej-root .primary-btn--accent{ background: var(--green); color: #fff; }
+
+.tadreej-root .primary-btn--accent:active{ background: var(--green-deep); }
+
+
+/* ───────── Tap-to-start gate (autoplay fallback) ───────── */
+.tadreej-root .gate{ position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  background: rgba(245,248,245,.92); backdrop-filter: blur(6px); }
+
+.tadreej-root .gate[hidden]{ display: none; }
+
+.tadreej-root .gate__btn{
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  color: var(--green-deep); font-weight: 600; font-size: 17px;
+}
+
+.tadreej-root .gate__btn svg{
+  width: 64px; height: 64px; padding: 24px; box-sizing: content-box;
+  background: linear-gradient(155deg, var(--green-bright), var(--green));
+  color: #fff; border-radius: 50%; box-shadow: 0 12px 34px rgba(23,131,74,.4);
+}
+
+
+@media (max-width: 360px) {
+  .tadreej-root .transport{ gap: 16px; }
+  .tadreej-root .play-btn{ width: 84px; height: 84px; }
+}
+
+
+/* ───────── Desktop (768px and up) ─────────
+   Below 768px the mobile-first column is unchanged. From 768px up
+   the app stops floating as a phone-width strip and becomes one
+   intentional, elevated "now-playing" panel centred on a soft
+   backdrop — looks designed for the laptop, not stranded on it.   */
+@media (min-width: 768px) {
+  .tadreej-root{
+    display: flex;
+    min-height: 100dvh;
+    padding: 32px 16px;
+    /* layered tints give the empty space depth instead of flat grey */
+    background:
+      radial-gradient(1100px 560px at 50% -8%,  var(--green-soft), transparent 60%),
+      radial-gradient(820px 520px at 102% 108%, #eaf4ee,           transparent 55%),
+      var(--bg);
+  }
+
+  /* margin:auto centres on both axes AND stays scrollable if the
+     panel (e.g. Settings open) is taller than the viewport. */
+  .tadreej-root .app{
+    margin: auto;
+    width: 100%;
+    max-width: 560px;
+    min-height: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    box-shadow: var(--shadow-lg);
+    padding: 14px 30px 26px;
+  }
+
+  .tadreej-root .topbar{ padding: 8px 2px 16px; }
+  .tadreej-root .screen{ gap: 18px; }
+
+  /* a touch more presence on the big screen */
+  .tadreej-root .now{ padding: 26px; gap: 16px; }
+  .tadreej-root .now__surah-ar{ font-size: 27px; }
+  .tadreej-root .now__ayah{ font-size: 40px; }
+  .tadreej-root .play-btn{ width: 96px; height: 96px; }
+  .tadreej-root .play-btn svg{ width: 44px; height: 44px; }
+  .tadreej-root .round-btn{ width: 64px; height: 64px; }
+
+  /* the page picker reads as a centred dialog rather than a phone
+     bottom-sheet when there's a whole screen around it */
+  .tadreej-root .sheet__panel{
+    top: 50%; bottom: auto; left: 50%; right: auto;
+    transform: translate(-50%, -50%);
+    max-width: 420px; width: calc(100% - 64px);
+    border-radius: 24px;
+    padding: 18px 26px 26px;
+    animation: pop .22s cubic-bezier(.2,.8,.2,1);
+  }
+  .tadreej-root .sheet__grip{ display: none; }
+}
+
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -46%) scale(.97); }
+ }
+
+
+/* ───────── Wide desktop: fill the screen (two-column) ─────────
+   At ≥980px the single panel splits into a large reading / now-playing
+   column and a control rail, so the app uses the laptop screen instead
+   of sitting as a small card in the middle.                          */
+@media (min-width: 980px) {
+  .tadreej-root .app{ max-width: 1080px; padding: 16px 34px 30px; }
+
+  .tadreej-root .screen{
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-areas:
+      "now  rail"
+      "foot foot";
+    column-gap: 30px;
+    row-gap: 16px;
+    align-items: start;
+  }
+  .tadreej-root .now{ grid-area: now; padding: 32px 28px; }
+  .tadreej-root .rail{ grid-area: rail; display: flex; flex-direction: column; gap: 16px; }
+  .tadreej-root .foot{ grid-area: foot; }
+
+  /* the reading panel gets the room it deserves */
+  .tadreej-root .now__surah-ar{ font-size: 30px; }
+  .tadreej-root .now__ayah{ font-size: clamp(34px, 2.8vw, 48px); line-height: 2; }
+}
+
+
+/* ───────── Pointer (mouse/trackpad) hover affordances ─────────
+   Gated on hover:hover so touch devices never get sticky states.   */
+@media (hover: hover) {
+  .tadreej-root .round-btn:hover{ border-color: var(--green-bright); color: var(--green); }
+  .tadreej-root .play-btn:hover{ filter: brightness(1.06); }
+  .tadreej-root .page-pill:hover{ background: var(--green-deep); }
+  .tadreej-root .mode__btn:hover:not(.is-active){ color: var(--green-deep); background: var(--green-soft); }
+  .tadreej-root .primary-btn:hover{ filter: brightness(.97); }
+  .tadreej-root .primary-btn--accent:hover{ background: var(--green-deep); }
+  .tadreej-root .step-btn:hover{ filter: brightness(.96); }
+  .tadreej-root .quick__chip:hover{ background: var(--green-soft); }
+  .tadreej-root .settings summary:hover{ background: var(--green-soft); }
+  .tadreej-root .seg-tab:hover:not(.is-active){ color: var(--green); }
+  .tadreej-root .surah-row:hover{ background: var(--green-soft); border-color: var(--green-bright); }
+}
+

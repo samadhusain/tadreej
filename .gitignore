@@ -1,0 +1,26 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Environment and local overrides
+.env*
+*.local
+
+# Python (scripts/build_audio.py)
+__pycache__/
+*.pyc
+.venv/
+
+# Per-ayah audio cut by scripts/build_audio.py; hosted outside the repo
+tadreej-audio/
+*.mp3
+
+# Local tooling
+.playwright-cli/
+.claude/
+.beads/
+
+# OS and logs
+.DS_Store
+*.log
