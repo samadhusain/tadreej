@@ -32,6 +32,8 @@ Tadreej runs in the browser and installs as an app on your phone. Playback conti
 
 Tadreej has no accounts. Your settings stay in your browser. The site's host and the services it calls (everyayah.com, api.alquran.cloud, and the host of the two extra reciters) see your IP address, as with any website.
 
+The site at tadreej.samad.sh counts page views with Cloudflare Web Analytics. It sets no cookies and does not fingerprint you. A copy you host yourself has no analytics.
+
 ## Run it yourself
 
 Requires Node 20.19+, 22.12+ or 24+.
