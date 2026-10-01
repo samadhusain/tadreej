@@ -297,16 +297,25 @@
 }
 
 
-/* ───────── Footer ───────── */
+/* ───────── Footer ─────────
+   The first and last credit lines span the row. The dua sits beside
+   the two short lines between them, so nothing wraps on a phone.   */
 .tadreej-root .foot{
-  margin-top: auto; padding: 18px 6px 4px;
-  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding: 16px 6px 4px;
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center;
   font-size: 11.5px; color: var(--faint);
 }
 
-.tadreej-root .foot__dua{ font-family: var(--ar); font-size: 16px; color: var(--green); }
+.tadreej-root .foot__dua{
+  grid-column: 2; grid-row: 2 / span 2; white-space: nowrap;
+  font-family: var(--ar); font-size: 16px; color: var(--green);
+}
 
-.tadreej-root .foot__credits{ display: flex; flex-direction: column; gap: 2px; }
+.tadreej-root .foot__credits{ display: contents; }
+
+.tadreej-root .foot__credits > span{ grid-column: 1; }
+
+.tadreej-root .foot__credits > span:first-child, .tadreej-root .foot__credits > span:last-child{ grid-column: 1 / -1; }
 
 .tadreej-root .foot a{ color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
