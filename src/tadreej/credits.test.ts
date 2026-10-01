@@ -17,6 +17,15 @@ describe('footerCredits', () => {
     expect(hrefs(true)).toContain('https://github.com/QUD-Technologies/quranic-universal-audio');
   });
 
+  it('always calls the code open source and links the repo', () => {
+    for (const extra of [false, true]) {
+      const code = footerCredits(extra).find((line) => line.label === 'Code:');
+      expect(code?.links).toEqual([
+        { text: 'open source on GitHub', href: 'https://github.com/samadhusain/tadreej' },
+      ]);
+    }
+  });
+
   it('credits Samad, linked to his GitHub profile, from Datstra Analytics', () => {
     for (const extra of [false, true]) {
       const by = footerCredits(extra).find((line) => line.label === 'Built with love by');

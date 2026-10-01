@@ -2,7 +2,8 @@
    Tadreej — footer credits.
    Tanzil's terms require naming the Tanzil Project and linking
    tanzil.net wherever its text is shown, so that credit never
-   depends on the build.
+   depends on the build. ATTRIBUTION.md sends rights holders to
+   the repo's issues, so the footer always links the repo.
    ============================================================ */
 
 export interface CreditLink { text: string; href: string }
@@ -25,6 +26,11 @@ export function footerCredits(hasExtraAudio: boolean): CreditLine[] {
         { text: 'Tanzil Project', href: 'https://tanzil.net' },
         { text: 'AlQuran Cloud', href: 'https://alquran.cloud' },
       ],
+    },
+    {
+      label: 'Code:',
+      joiner: ' · ',
+      links: [{ text: 'open source on GitHub', href: 'https://github.com/samadhusain/tadreej' }],
     },
     {
       label: 'Built with love by',
