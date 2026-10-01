@@ -6,6 +6,8 @@
    the repo's issues, so the footer always links the repo.
    ============================================================ */
 
+export const REPO_URL = 'https://github.com/samadhusain/tadreej';
+
 export interface CreditLink { text: string; href: string }
 export interface CreditLine { label: string; joiner: string; links: CreditLink[] }
 
@@ -30,7 +32,7 @@ export function footerCredits(hasExtraAudio: boolean): CreditLine[] {
     {
       label: 'Code:',
       joiner: ' · ',
-      links: [{ text: 'open source on GitHub', href: 'https://github.com/samadhusain/tadreej' }],
+      links: [{ text: 'open source on GitHub', href: REPO_URL }],
     },
     {
       label: 'Built with love by',

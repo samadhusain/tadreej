@@ -1,0 +1,23 @@
+# The Feedback sheet in the app links to this form by its file name.
+# src/tadreej/feedback.test.ts fails if the name changes without the link.
+name: Feature request
+description: Suggest something that would help you memorise.
+title: "Feature: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping Tadreej. Tell us what it should do. The reason is optional. Anyone can read an issue, so leave out private details.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should Tadreej do?
+      description: Describe the feature in one or two sentences.
+      placeholder: "Example: Let me set how many times the last step repeats."
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: How would it help you memorise?
+      description: The reason helps us choose what to build first.

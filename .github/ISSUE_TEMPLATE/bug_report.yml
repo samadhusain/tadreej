@@ -1,0 +1,31 @@
+# The Feedback sheet in the app fills `where` and `device` through query
+# parameters named after these ids. src/tadreej/feedback.test.ts fails if an id
+# or this file's name changes without the link.
+name: Bug report
+description: Something in Tadreej does not work as it should.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping Tadreej. Tell us what went wrong. The other boxes are optional. Anyone can read an issue, so leave out private details.
+  - type: textarea
+    id: what
+    attributes:
+      label: What went wrong?
+      description: Say what you did and what happened. Say what you expected instead.
+      placeholder: "Example: I tapped Next on page 50. The audio stopped after ayah 3. I expected ayah 4 to play."
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where in Tadreej?
+      description: Tadreej fills this in when it can. If the box is empty, type the page or surah, the mode and the reciter.
+      placeholder: "Example: Page 50, stepped mode, Mishari Al-Afasy"
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      description: Tadreej fills this in when it can. If the box is empty, type your device and browser.
+      placeholder: "Example: iPhone 15, Safari"

@@ -28,11 +28,17 @@ Tadreej runs in the browser and installs as an app on your phone. Playback conti
 | `?mode=loop` or `?mode=stepped` | That mode |
 | `?autoplay=1` | Starts playing at once, where the browser allows it |
 
+## Feedback
+
+To report a bug or suggest a feature, tap **Feedback** at the bottom of the app, then choose one. Each choice opens a short form on GitHub. You can also [open an issue](https://github.com/samadhusain/tadreej/issues/new/choose) from this repo. Both ways need a free GitHub account.
+
 ## Privacy
 
 Tadreej has no accounts. Your settings stay in your browser. The site's host and the services it calls (everyayah.com, api.alquran.cloud, and the host of the two extra reciters) see your IP address, as with any website.
 
 The site at tadreej.samad.sh counts page views with Cloudflare Web Analytics. It sets no cookies and does not fingerprint you. A copy you host yourself has no analytics.
+
+**Report a bug** sends your page, settings and device details to GitHub, to fill in the form. Tadreej sends nothing until you tap the button. You can edit the form before you submit it. A submitted issue is public.
 
 ## Run it yourself
 

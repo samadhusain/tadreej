@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { HAS_EXTRA_AUDIO, RECITERS, TadreejEngine, type UiState } from './engine';
 import { footerCredits } from './credits';
+import FeedbackSheet from './FeedbackSheet';
 import {
   TOTAL_PAGES,
   TOTAL_SURAHS,
@@ -39,6 +40,7 @@ export default function TadreejPlayer() {
   // and a remembered end can never strand itself hundreds of pages away.
   const [rangeSpan, setRangeSpan] = useState(0);
   const rangeTo = Math.min(TOTAL_PAGES, rangeFrom + rangeSpan);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -63,8 +65,8 @@ export default function TadreejPlayer() {
         if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); eng.dismissGateAndPlay(); }
         return;
       }
-      if (sheetOpen) {
-        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); }
+      if (sheetOpen || feedbackOpen) {
+        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); setFeedbackOpen(false); }
         return;
       }
       switch (e.key) {
@@ -81,7 +83,7 @@ export default function TadreejPlayer() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetOpen, ui?.gateVisible]);
+  }, [sheetOpen, feedbackOpen, ui?.gateVisible]);
 
   function openSheet() {
     if (!settings) return;
@@ -285,7 +287,7 @@ export default function TadreejPlayer() {
 
           <footer className="foot">
             <span className="foot__credits">
-              {footerCredits(HAS_EXTRA_AUDIO).map((line) => (
+              {footerCredits(HAS_EXTRA_AUDIO).map((line, n, lines) => (
                 <span key={line.label}>
                   {line.label}{' '}
                   {line.links.map((link, i) => (
@@ -294,6 +296,10 @@ export default function TadreejPlayer() {
                       <a href={link.href} target="_blank" rel="noopener">{link.text}</a>
                     </span>
                   ))}
+                  {/* Ends the last line: it floats to the footer's bottom corner. */}
+                  {n === lines.length - 1 && (
+                    <button className="foot__feedback" aria-haspopup="dialog" onClick={() => setFeedbackOpen(true)}>Feedback</button>
+                  )}
                 </span>
               ))}
             </span>
@@ -455,6 +461,9 @@ export default function TadreejPlayer() {
             </div>
           </div>
         </div>
+
+        {/* ───────── Feedback sheet ───────── */}
+        {feedbackOpen && <FeedbackSheet ui={ui} reciterName={reciterName} onClose={() => setFeedbackOpen(false)} />}
 
         {/* ───────── Tap-to-start overlay (autoplay blocked by iOS) ───────── */}
         <div className="gate" hidden={!ui.gateVisible} onClick={() => engine?.dismissGateAndPlay()}>

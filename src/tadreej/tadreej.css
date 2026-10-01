@@ -319,6 +319,22 @@
 
 .tadreej-root .foot a{ color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
+/* The Feedback link ends the last credit line and floats to its right edge.
+   From 355px wide it shares that line, so the footer keeps its height.
+   Below 355px the line is full, and a float then drops to a line of its
+   own instead of covering the credit. */
+.tadreej-root .foot__feedback{
+  float: right; margin-left: 12px; position: relative;
+  line-height: inherit; font-weight: 600; color: var(--green);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* A 44px-high tap target around the small text. It covers the dua above
+   and the empty margin below, and it stays inside the app's padding. */
+.tadreej-root .foot__feedback::after{ content: ""; position: absolute; inset: -10px -10px -17px; }
+
+.tadreej-root .foot__feedback:active{ color: var(--green-deep); }
+
 
 /* ───────── Page picker sheet ───────── */
 .tadreej-root .sheet{ position: fixed; inset: 0; z-index: 40; }
@@ -507,6 +523,22 @@
 .tadreej-root .primary-btn--accent:active{ background: var(--green-deep); }
 
 
+/* ───────── Feedback sheet ─────────
+   The page picker's sheet, holding two links to GitHub issue forms. */
+.tadreej-root .feedback__title{ font-size: 18px; font-weight: 700; letter-spacing: -.02em; text-align: center; }
+
+.tadreej-root .feedback__lead{ font-size: 13.5px; color: var(--muted); text-align: center; margin: 6px 0 18px; }
+
+.tadreej-root .feedback__actions{ display: grid; gap: 10px; }
+
+.tadreej-root .feedback__actions a{ display: block; text-align: center; text-decoration: none; }
+
+.tadreej-root .feedback__cancel{
+  display: block; width: 100%; border-radius: 14px; padding: 14px; margin-top: 6px;
+  font-weight: 600; font-size: 15px; color: var(--muted);
+}
+
+
 /* ───────── Tap-to-start gate (autoplay fallback) ───────── */
 .tadreej-root .gate{ position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
   background: rgba(245,248,245,.92); backdrop-filter: blur(6px); }
@@ -528,6 +560,18 @@
 @media (max-width: 360px) {
   .tadreej-root .transport{ gap: 16px; }
   .tadreej-root .play-btn{ width: 84px; height: 84px; }
+}
+
+/* Narrower than an iPhone: the footer has no side padding, so the longest
+   credit line and the Feedback link still fit on a 360px phone. */
+@media (max-width: 374px) {
+  .tadreej-root .foot{ padding-left: 0; padding-right: 0; }
+}
+
+/* Below 355px the Feedback link sits under the last credit line. Its tap
+   target stops at its own top edge, so it does not cover the link above. */
+@media (max-width: 354px) {
+  .tadreej-root .foot__feedback::after{ top: 0; }
 }
 
 
@@ -631,5 +675,7 @@
   .tadreej-root .settings summary:hover{ background: var(--green-soft); }
   .tadreej-root .seg-tab:hover:not(.is-active){ color: var(--green); }
   .tadreej-root .surah-row:hover{ background: var(--green-soft); border-color: var(--green-bright); }
+  .tadreej-root .foot__feedback:hover{ color: var(--green-deep); }
+  .tadreej-root .feedback__cancel:hover{ color: var(--ink); background: var(--bg); }
 }
 
