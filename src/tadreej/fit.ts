@@ -20,14 +20,13 @@ export function fitSize(fits: (size: number) => boolean, min: number, max: numbe
   return lo;
 }
 
-/** Fit an ayah to its box. Shrinks the font from its CSS size (the maximum)
- *  to MIN_AYAH_PX until the content fits. If it still does not fit:
- *  - `--fit-overflow: scroll` (fixed-height desktop layout) keeps the floor
- *    size and the box scrolls inside itself;
- *  - `--fit-overflow: grow` (everywhere else) restores the CSS size and sets
- *    data-fit="grow", which lets the box grow and the page scroll.
+/** Desk mode only: fit an ayah to its box. The CSS sets `--fit: on` on the
+ *  element from 980x600 up. Elsewhere the hook leaves the element alone.
+ *  Shrinks the font from its CSS size (the maximum) to MIN_AYAH_PX until the
+ *  content fits. At the floor the box scrolls inside itself.
  *  Reruns when `key` changes (a new ayah, or words on/off), when the box
- *  resizes, and once webfonts load. A new key also resets the inner scroll. */
+ *  resizes (this includes crossing the desk breakpoint, which clears the fit),
+ *  and once webfonts load. A new key resets the inner scroll. */
 export function useFitFont(ref: RefObject<HTMLElement | null>, key: string) {
   useLayoutEffect(() => {
     const el = ref.current;
@@ -35,25 +34,23 @@ export function useFitFont(ref: RefObject<HTMLElement | null>, key: string) {
     let alive = true;
     let lastW = -1;
     let lastH = -1;
+    const deskOn = () => getComputedStyle(el).getPropertyValue('--fit').trim() === 'on';
     const run = () => {
-      el.removeAttribute('data-fit'); // measure the one-screen box, not the grown one
       el.style.fontSize = '';
-      const cs = getComputedStyle(el);
-      const grow = cs.getPropertyValue('--fit-overflow').trim() === 'grow';
-      const fits = (s: number) => {
-        el.style.fontSize = `${s}px`;
-        return el.scrollHeight <= el.clientHeight;
-      };
-      const size = fitSize(fits, MIN_AYAH_PX, parseFloat(cs.fontSize));
-      // fits() leaves the font at `size`; at the floor with no fit, grow mode undoes it.
-      if (!fits(size) && grow) {
-        el.style.fontSize = '';
-        el.setAttribute('data-fit', 'grow');
+      if (deskOn()) {
+        const fits = (s: number) => {
+          el.style.fontSize = `${s}px`;
+          return el.scrollHeight <= el.clientHeight;
+        };
+        // fits() leaves the font at the size it last tried: the answer, or the floor.
+        const size = fitSize(fits, MIN_AYAH_PX, parseFloat(getComputedStyle(el).fontSize));
+        fits(size);
       }
+      if (!el.getAttribute('style')) el.removeAttribute('style'); // leave no empty style behind
       lastW = el.clientWidth;
       lastH = el.clientHeight;
     };
-    el.scrollTop = 0;
+    if (deskOn()) el.scrollTop = 0;
     run();
     const ro = new ResizeObserver(() => {
       if (el.clientWidth === lastW && el.clientHeight === lastH) return;

@@ -1,5 +1,6 @@
 // Usage: npx -y @playwright/cli@latest -s=tadreej run-code --filename=scripts/fit-check.js
-// Needs the dev server on http://localhost:5199. Prints font size and state (FULL, INNER-SCROLL, GROW) per viewport, ayah and word mode.
+// Needs the dev server on http://localhost:5199. Desk viewports (980x600 and up) report FULL or INNER-SCROLL.
+// Other viewports must be untouched (NATURAL): no inline font-size, no inner scroll.
 async page => {
   const BASE = 'http://localhost:5199/';
   const sizes = [[1920,1080],[1920,945],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500]];
@@ -26,7 +27,7 @@ async page => {
       tr: tr ? Math.round(parseFloat(getComputedStyle(tr).fontSize) * 10) / 10 : 0,
       inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth,
       noInner: el.scrollHeight <= el.clientHeight,
-      grow: el.dataset.fit === 'grow',
+      inline: el.style.fontSize !== '' || el.hasAttribute('data-fit'),
       hOver: document.documentElement.scrollWidth > innerWidth,
       ctl: t.top >= 0 && t.bottom <= innerHeight,
     };
@@ -67,8 +68,10 @@ async page => {
         await page.waitForTimeout(200);
         const m = await measure();
         const bad = m.label.endsWith(tail) ? '' : ` LABEL_MISMATCH(${m.label})`;
-        // GROW: the ayah did not fit one screen, so the box grew and the page scrolls.
-        const state = m.grow ? (m.noInner ? 'GROW' : 'GROW-CLIPPED') : m.noInner ? (m.inside ? 'FULL' : 'FULL-PAGE-SCROLL') : m.inside ? 'INNER-SCROLL' : 'OUT-OF-VIEW';
+        const desk = w >= 980 && h >= 600;
+        const state = desk
+          ? (m.noInner ? (m.inside ? 'FULL' : 'FULL-PAGE-SCROLL') : m.inside ? 'INNER-SCROLL' : 'OUT-OF-VIEW')
+          : (m.inline ? 'INLINE-STYLE!' : m.noInner ? 'NATURAL' : 'INNER-SCROLL!');
         out.push(`${words ? 'words' : 'plain'} ${name} ${w}x${h} font=${m.font} tr=${m.tr} ${state} hOver=${m.hOver} ctl=${m.ctl}${bad}`);
       }
     }
