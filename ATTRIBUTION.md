@@ -14,6 +14,12 @@ Fetched when the app runs; not stored in this repo.
 
 Quran text: Tanzil Project (https://tanzil.net), served by AlQuran Cloud (https://alquran.cloud), an Islamic Network project. The text is shown verbatim.
 
+## Word-by-word translation and word timings
+
+Fetched when the listener turns on **Word-by-word translation**; not stored in this repo.
+
+English word-by-word translation and word timings: Quran.com (https://quran.com), through its API (https://api.quran.com). Tadreej pairs each translation with a word of the Tanzil text by position. The timings fit the EveryAyah recordings of Mishari Al-Afasy, Abdul Basit (Murattal), Mahmoud Al-Husary, Al-Minshawi (Murattal) and Hani Ar-Rifai.
+
 ## Audio
 
 Audio: EveryAyah.com (https://everyayah.com). Recitations remain the property of their reciters and publishers.

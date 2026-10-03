@@ -13,6 +13,7 @@ import {
   surahMeta,
   type RangeEnd,
 } from './range';
+import { hasTimings } from './words';
 import './tadreej.css';
 
 /* Verse meter gradient — lime → deep green by position */
@@ -41,6 +42,8 @@ export default function TadreejPlayer() {
   const [rangeSpan, setRangeSpan] = useState(0);
   const rangeTo = Math.min(TOTAL_PAGES, rangeFrom + rangeSpan);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // The word sounding now, by its number in the ayah. 0 is none.
+  const [activeWord, setActiveWord] = useState(0);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -52,6 +55,18 @@ export default function TadreejPlayer() {
 
   const engine = engineRef.current;
   const settings = ui?.settings;
+
+  // Follow the audio clock while words are on screen. The engine emits once
+  // per ayah, which is too coarse to track a word.
+  const hasWords = Boolean(ui?.words);
+  useEffect(() => {
+    if (!ui?.playing || !hasWords) return;
+    let frame = requestAnimationFrame(function tick() {
+      setActiveWord(engineRef.current?.activeWord() ?? 0);
+      frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [ui?.playing, hasWords]);
 
   // Keyboard shortcuts: Space play/pause · ←/→ step · P picker · L/S mode
   useEffect(() => {
@@ -168,7 +183,18 @@ export default function TadreejPlayer() {
               <span className="now__surah-en">{ui.surahEn}</span>
             </div>
 
-            <p className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
+            {ui.words ? (
+              <p className="now__ayah now__ayah--words" dir="rtl" lang="ar">
+                {ui.words.map((w, i) => (
+                  <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === activeWord ? ' is-active' : ''}`}>
+                    <span className="word__ar">{w.ar}</span>
+                    <span className="word__tr" dir="ltr" lang="en">{w.tr}</span>
+                  </span>
+                ))}
+              </p>
+            ) : (
+              <p className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
+            )}
 
             <div className="now__progress">
               <div
@@ -280,6 +306,18 @@ export default function TadreejPlayer() {
                     onChange={(e) => engine?.updateSettings({ repeatPage: e.target.checked })}
                   />
                   <span>Repeat {ui.unitNoun} when finished <em>(keeps playing hands-free)</em></span>
+                </label>
+
+                <label className="field field--row">
+                  <input
+                    type="checkbox"
+                    checked={settings.wordByWord}
+                    onChange={(e) => engine?.updateSettings({ wordByWord: e.target.checked })}
+                  />
+                  <span>
+                    Word-by-word translation{' '}
+                    <em>({hasTimings(settings.reciter) ? 'highlights the word being recited' : 'no word highlight for this reciter'})</em>
+                  </span>
                 </label>
               </div>
             </details>

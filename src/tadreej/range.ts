@@ -50,6 +50,14 @@ export function expandPage(page: number): UnitRef[] {
   return out;
 }
 
+/** The page an ayah is printed on, or 0 when no page holds it. */
+export function pageOf(s: number, a: number): number {
+  for (let p = surahMeta(s).page || 1; p <= TOTAL_PAGES; p++) {
+    if (PAGES[String(p)]?.some((seg) => seg.s === s && a >= seg.f && a <= seg.t)) return p;
+  }
+  return 0;
+}
+
 export function expandSurah(s: number): UnitRef[] {
   const n = surahMeta(s).ayahs || 0;
   const out: UnitRef[] = [];

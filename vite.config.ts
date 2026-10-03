@@ -63,7 +63,8 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: /^https:\/\/api\.alquran\.cloud\//,
+              // The Quran text, and the word-by-word translations and timings
+              urlPattern: /^https:\/\/api\.(alquran\.cloud|quran\.com)\//,
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'tadreej-text',

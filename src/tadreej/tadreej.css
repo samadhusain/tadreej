@@ -165,6 +165,34 @@
   word-spacing: .04em;
 }
 
+/* Word by word: each word sits over its translation. */
+.tadreej-root .now__ayah--words{
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 6px 4px;
+  line-height: 1.9;   /* room for descenders above the translation */
+  word-spacing: 0;
+}
+
+.tadreej-root .word{
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 6px 6px;
+  border-radius: 12px;
+  transition: background .12s ease;
+}
+
+.tadreej-root .word__tr{
+  font-family: var(--ui);
+  font-size: 12px; line-height: 1.25; font-weight: 500;
+  color: var(--muted);
+  max-width: 9em;
+}
+
+.tadreej-root .word.is-active{ background: var(--green-soft); }
+
+.tadreej-root .word.is-active .word__ar{ color: var(--green); }
+
+.tadreej-root .word.is-active .word__tr{ color: var(--green-deep); }
+
 .tadreej-root .now__progress{ width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 9px; margin-top: 2px; }
 
 

@@ -15,6 +15,8 @@ Pick a page, a range of pages, or a surah. Then pick a mode:
 
 A range starts at the top of any page. It runs to the end of that page's surah, or to a page you choose. Once you have memorised the first pages, start a range at the next one, so stepping begins there instead of at ayah 1.
 
+Turn on **Word-by-word translation** in Settings to see the English meaning under each word of the ayah. For five reciters (Mishari Al-Afasy, Abdul Basit, Mahmoud Al-Husary, Al-Minshawi and Hani Ar-Rifai), Tadreej also highlights the word being recited.
+
 Tadreej runs in the browser and installs as an app on your phone. Playback continues with the screen locked, and lock-screen and headset controls move between steps.
 
 ## Deep links
@@ -34,7 +36,7 @@ To report a bug or suggest a feature, tap **Feedback** at the bottom of the app,
 
 ## Privacy
 
-Tadreej has no accounts. Your settings stay in your browser. The site's host and the services it calls (everyayah.com, api.alquran.cloud, and the host of the two extra reciters) see your IP address, as with any website.
+Tadreej has no accounts. Your settings stay in your browser. The site's host and the services it calls (everyayah.com, api.alquran.cloud, and the host of the two extra reciters) see your IP address, as with any website. Tadreej calls api.quran.com only while **Word-by-word translation** is on.
 
 The site at tadreej.samad.sh counts page views with Cloudflare Web Analytics. It sets no cookies and does not fingerprint you. A copy you host yourself has no analytics.
 
