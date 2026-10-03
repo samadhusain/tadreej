@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { followAllowed, followTarget } from './follow';
+import { followAllowed, followTarget, latchReleases, LATCH_STILL_MS } from './follow';
 
 // A 400px box over 1000px of content, in rows 100px tall: max scroll is 600.
 const box = { clientHeight: 400, scrollHeight: 1000, rowHeight: 100 };
@@ -86,5 +86,31 @@ describe('followAllowed', () => {
 
   it('stops for good once the user has scrolled', () => {
     expect(followAllowed({ ...ok, userScrolled: true })).toBe(false);
+  });
+});
+
+describe('latchReleases', () => {
+  const ok = { latched: true, wordInView: true, touching: false, msSinceScroll: 1000 };
+
+  it('releases when the word is in view, no touch is down and the view is still', () => {
+    expect(latchReleases(ok)).toBe(true);
+    expect(latchReleases({ ...ok, msSinceScroll: LATCH_STILL_MS })).toBe(true);
+  });
+
+  it('does nothing when not latched', () => {
+    expect(latchReleases({ ...ok, latched: false })).toBe(false);
+  });
+
+  it('does not release while a touch is in progress', () => {
+    expect(latchReleases({ ...ok, touching: true })).toBe(false);
+  });
+
+  it('does not release within the still time after a scroll', () => {
+    expect(latchReleases({ ...ok, msSinceScroll: 0 })).toBe(false);
+    expect(latchReleases({ ...ok, msSinceScroll: LATCH_STILL_MS - 1 })).toBe(false);
+  });
+
+  it('does not release when the word is out of view', () => {
+    expect(latchReleases({ ...ok, wordInView: false })).toBe(false);
   });
 });
