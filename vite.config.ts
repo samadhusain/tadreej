@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { audioCachePattern } from './src/tadreej/reciters'
+import { audioCachePattern, extraAudioBase } from './src/tadreej/reciters'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_')
@@ -40,8 +40,8 @@ export default defineConfig(({ mode }) => {
           navigateFallbackDenylist: [/^\/tadreej-audio\//],
           runtimeCaching: [
             {
-              // everyayah.com, and the self-hosted ayah files when VITE_EXTRA_AUDIO_BASE is set
-              urlPattern: audioCachePattern(env.VITE_EXTRA_AUDIO_BASE),
+              // everyayah.com, and the extra reciters' ayah files (same host the app uses)
+              urlPattern: audioCachePattern(extraAudioBase(env.VITE_EXTRA_AUDIO_BASE)),
               handler: 'CacheFirst',
               options: {
                 cacheName: 'tadreej-audio',

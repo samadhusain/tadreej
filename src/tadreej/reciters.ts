@@ -2,8 +2,8 @@
    Tadreej — which reciters a build offers, and where their audio lives.
 
    Pure: no DOM and no import.meta.env, so vite.config.ts and the
-   unit tests can import it. engine.ts applies it to the build's
-   VITE_EXTRA_AUDIO_BASE.
+   unit tests can import it. engine.ts and vite.config.ts pass the
+   build's VITE_EXTRA_AUDIO_BASE through extraAudioBase().
    ============================================================ */
 
 export interface Reciter {
@@ -28,7 +28,7 @@ const EVERYAYAH_RECITERS: Reciter[] = [
 ];
 
 /** Reciters everyayah.com lacks. Their ayah files are cut by
- *  scripts/build_audio.py and served from the address in VITE_EXTRA_AUDIO_BASE. */
+ *  scripts/build_audio.py and served from the public host, or the address in VITE_EXTRA_AUDIO_BASE. */
 const EXTRA_RECITERS: Reciter[] = [
   { id: 'abdurrashid_sufi', name: 'Abdirashid Ali Sufi' },
   // Every complete recording of this reciter is ad-Duri 'an Abi 'Amr,
@@ -40,6 +40,15 @@ const EXTRA_RECITERS: Reciter[] = [
 export function normalizeBase(base: string | undefined): string | undefined {
   const trimmed = (base ?? '').trim().replace(/\/+$/, '');
   return trimmed || undefined;
+}
+
+/** The public host of the two extra reciters' ayah files. */
+export const DEFAULT_EXTRA_AUDIO_BASE = 'https://tadreej-audio.samad.sh';
+
+/** The extra audio base for a build, from VITE_EXTRA_AUDIO_BASE.
+ *  Not set: the public host. Blank: undefined, which leaves the two reciters out. */
+export function extraAudioBase(env: string | undefined): string | undefined {
+  return env === undefined ? DEFAULT_EXTRA_AUDIO_BASE : normalizeBase(env);
 }
 
 export function buildReciters(extraBase: string | undefined): Reciter[] {

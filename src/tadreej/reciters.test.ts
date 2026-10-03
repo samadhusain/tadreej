@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_RECITER,
+  DEFAULT_EXTRA_AUDIO_BASE,
   EVERYAYAH_BASE,
   audioCachePattern,
   buildReciters,
+  extraAudioBase,
   normalizeBase,
   resolveReciterId,
 } from './reciters';
@@ -30,6 +32,22 @@ describe('buildReciters', () => {
   it('drops trailing slashes so audio URLs get exactly one', () => {
     expect(buildReciters('/tadreej-audio/')[8].base).toBe('/tadreej-audio');
     expect(normalizeBase('https://audio.example.com//')).toBe('https://audio.example.com');
+  });
+});
+
+describe('extraAudioBase', () => {
+  it('uses the public host when the variable is not set', () => {
+    expect(extraAudioBase(undefined)).toBe(DEFAULT_EXTRA_AUDIO_BASE);
+    expect(DEFAULT_EXTRA_AUDIO_BASE).toBe('https://tadreej-audio.samad.sh');
+  });
+
+  it('uses a set value, normalised', () => {
+    expect(extraAudioBase('https://audio.example.com//')).toBe('https://audio.example.com');
+  });
+
+  it('turns the extra reciters off for a blank value', () => {
+    expect(extraAudioBase('')).toBeUndefined();
+    expect(extraAudioBase('   ')).toBeUndefined();
   });
 });
 

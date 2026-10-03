@@ -28,7 +28,7 @@ import {
   type RangeEnd,
   type UnitRef,
 } from './range';
-import { DEFAULT_RECITER, EVERYAYAH_BASE, buildReciters, resolveReciterId } from './reciters';
+import { DEFAULT_RECITER, EVERYAYAH_BASE, buildReciters, extraAudioBase, resolveReciterId } from './reciters';
 import { activeWord, alignWords, parseWordsPage, wordsUrl, type AyahWords, type WordView } from './words';
 
 const TEXT_API = 'https://api.alquran.cloud/v1/page';
@@ -37,8 +37,9 @@ const LS = 'tadreej.v1';
 const LS_RECENT = 'tadreej.recent';
 
 /** The reciters this build offers. Sufi and Noreen join the seven
- *  everyayah.com reciters only when VITE_EXTRA_AUDIO_BASE is set. */
-export const RECITERS = buildReciters(import.meta.env.VITE_EXTRA_AUDIO_BASE);
+ *  everyayah.com reciters, from the public host unless VITE_EXTRA_AUDIO_BASE
+ *  names another address or is blank (which leaves them out). */
+export const RECITERS = buildReciters(extraAudioBase(import.meta.env.VITE_EXTRA_AUDIO_BASE));
 export const HAS_EXTRA_AUDIO = RECITERS.some((r) => r.base !== undefined);
 
 export interface TadreejSettings {
