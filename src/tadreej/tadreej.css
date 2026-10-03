@@ -690,13 +690,13 @@
 
 
 /* ───────── Desk mode: one viewport, fixed type size ─────────
-   Only from 980x600 up. Everything outside this query renders as it did
+   Only from 980x680 up. Everything outside this query renders as it did
    before desk mode. The page is one viewport tall and never scrolls. The
    reading card takes the height the header, control bar and footer leave.
    The ayah has one font size and starts at the same place every time; a
    long ayah scrolls inside its box (useAyahScroll follows the sounding row).
    The controls form one bar along the bottom: mode, transport, settings.   */
-@media (min-width: 980px) and (min-height: 600px) {
+@media (min-width: 980px) and (min-height: 680px) {
   .tadreej-root{ box-sizing: border-box; height: 100dvh; padding: 16px 24px; }
 
   .tadreej-root .app{
@@ -720,9 +720,12 @@
 
   /* The rail's children become the bar's three cells. */
   .tadreej-root .rail{ display: contents; }
-  .tadreej-root .mode{ grid-area: mode; justify-self: start; width: 300px; }
+  .tadreej-root .mode{ grid-area: mode; justify-self: start; width: min(300px, 100%); }
   .tadreej-root .transport{ grid-area: transport; padding: 0; }
-  .tadreej-root .settings{ grid-area: settings; justify-self: end; width: 300px; position: relative; overflow: visible; }
+  .tadreej-root .settings{
+    grid-area: settings; justify-self: end; width: min(300px, 100%); height: 64px;
+    position: relative; overflow: visible;
+  }
 
   .tadreej-root .now{
     align-self: stretch; min-height: 0;
@@ -749,7 +752,6 @@
   }
 
   /* Settings opens upward from its button and scrolls inside itself. */
-  .tadreej-root .settings{ height: 64px; }
   .tadreej-root .settings summary{ height: 100%; padding-block: 0; border-radius: var(--r-card); }
   .tadreej-root .settings__grid{
     position: absolute; right: 0; bottom: calc(100% + 12px); z-index: 30;
@@ -759,15 +761,19 @@
     border-radius: var(--r-card); box-shadow: var(--shadow-lg);
   }
 
-  /* Footer credits on one line, the dua and Feedback at the right. */
+  /* Footer credits stay on one line from 980px: type and gaps shrink with the width. */
   .tadreej-root .foot{
-    display: flex; align-items: center; justify-content: space-between; gap: 24px;
-    padding: 0 4px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 0 4px; font-size: clamp(9.5px, .8vw, 11.5px);
   }
-  .tadreej-root .foot__credits{ display: flex; flex-wrap: wrap; gap: 0 20px; }
-  .tadreej-root .foot__feedback{ float: none; margin-left: 20px; }
+  .tadreej-root .foot__credits{ display: flex; flex-wrap: nowrap; white-space: nowrap; gap: 0 clamp(8px, 1.2vw, 20px); }
+  .tadreej-root .foot__feedback{ float: none; margin-left: clamp(8px, 1.2vw, 20px); }
   .tadreej-root .foot__feedback::after{ inset: -10px; }
   .tadreej-root .foot__dua{ font-size: 15px; }
+  /* At the narrowest desk width the credits take the whole line, so the decorative dua steps aside. */
+  @media (max-width: 1010px) {
+    .tadreej-root .foot__dua{ display: none; }
+  }
 
   /* Short laptop screens: trim the chrome so the ayah keeps the height. */
   @media (max-height: 820px) {

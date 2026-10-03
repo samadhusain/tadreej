@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { followAllowed, followTarget, USER_PAUSE_MS } from './follow';
+import { followAllowed, followTarget } from './follow';
 
 // A 400px box over 1000px of content, in rows 100px tall: max scroll is 600.
 const box = { clientHeight: 400, scrollHeight: 1000, rowHeight: 100 };
@@ -43,8 +43,34 @@ describe('followTarget', () => {
   });
 });
 
+describe('followTarget edge cases', () => {
+  it('clamps a negative row top to 0', () => {
+    expect(followTarget({ ...box, scrollTop: 300, rowTop: -50 })).toBe(0);
+  });
+
+  it('brings the first row back to 0', () => {
+    expect(followTarget({ ...box, scrollTop: 300, rowTop: 0 })).toBe(0);
+    expect(followTarget({ ...box, scrollTop: 0, rowTop: 0 })).toBeNull();
+  });
+
+  it('ignores a move of under a pixel', () => {
+    // The row is the last visible one, but the target is 0.5px from where the box already is.
+    expect(followTarget({ clientHeight: 150, scrollHeight: 1000, rowHeight: 100, scrollTop: 299.5, rowTop: 300 })).toBeNull();
+  });
+
+  it('does not jitter on a row taller than the view', () => {
+    expect(followTarget({ clientHeight: 400, scrollHeight: 1000, rowHeight: 600, scrollTop: 0, rowTop: 0 })).toBeNull();
+    expect(followTarget({ clientHeight: 400, scrollHeight: 1000, rowHeight: 600, scrollTop: 0, rowTop: 300 })).toBe(300);
+  });
+
+  it('works with page-shaped input, where the row height includes the top margin', () => {
+    // Row (with its 12px margin) ends at 1812, below the 1800px bottom of the view.
+    expect(followTarget({ scrollTop: 1000, clientHeight: 800, scrollHeight: 5000, rowTop: 1700, rowHeight: 112 })).toBe(1700);
+  });
+});
+
 describe('followAllowed', () => {
-  const ok = { playing: true, settingsOpen: false, sheetOpen: false, gateVisible: false, inputFocused: false, msSinceUserInput: Infinity };
+  const ok = { playing: true, settingsOpen: false, sheetOpen: false, gateVisible: false, inputFocused: false, userScrolled: false };
 
   it('follows while playing with nothing in the way', () => {
     expect(followAllowed(ok)).toBe(true);
@@ -58,9 +84,7 @@ describe('followAllowed', () => {
     expect(followAllowed({ ...ok, [k]: true })).toBe(false);
   });
 
-  it('pauses for a while after user input, then resumes', () => {
-    expect(followAllowed({ ...ok, msSinceUserInput: 0 })).toBe(false);
-    expect(followAllowed({ ...ok, msSinceUserInput: USER_PAUSE_MS - 1 })).toBe(false);
-    expect(followAllowed({ ...ok, msSinceUserInput: USER_PAUSE_MS })).toBe(true);
+  it('stops for good once the user has scrolled', () => {
+    expect(followAllowed({ ...ok, userScrolled: true })).toBe(false);
   });
 });

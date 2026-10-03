@@ -1,11 +1,11 @@
 // Usage: npx -y @playwright/cli@latest -s=tadreej run-code --filename=scripts/fit-check.js
-// Needs the dev server on http://localhost:5199. Desk viewports (980x600 up) must show a fixed 40px ayah,
+// Needs the dev server on http://localhost:5199. Desk viewports (980x680 up) must show a fixed 40px ayah,
 // no page scroll and visible controls. A fitting ayah (FULL) is centred in its box within 2px; an
 // overflowing one (INNER-SCROLL) has its first row at the box's top padding at scrollTop 0.
 // Other viewports must be untouched (NATURAL). Prints a line per case, then a check summary.
 async page => {
   const BASE = 'http://localhost:5199/';
-  const sizes = [[1920,1080],[1920,945],[1728,990],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500]];
+  const sizes = [[1920,1080],[1920,945],[1728,990],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500],[980,680],[1280,680],[980,600]];
   // [name, query that shows the ayah's page, tail of the on-screen "Surah · Ayah N" label]
   const ayahs = [
     ['2:282', '?page=48', 'Ayah 282'],
@@ -36,7 +36,7 @@ async page => {
     const blockBottom = Math.max(...rects.map((r) => r.bottom));
     const topGap = blockTop - (b.top + padT);
     const bottomGap = (b.bottom - padB) - blockBottom;
-    const tops = [...el.querySelectorAll('.word')].map((w) => Math.round(w.getBoundingClientRect().top - b.top + el.scrollTop));
+    const tops = ws.map((w) => Math.round(w.getBoundingClientRect().top - b.top + el.scrollTop));
     const rowTops = [...new Set(tops)];
     const rowH = rowTops.length > 1 ? rowTops[1] - rowTops[0] : 0;
     const full = rowTops.filter((t) => t + rowH <= el.clientHeight).length;
@@ -49,12 +49,24 @@ async page => {
       rows: rowTops.length,
       rowsFit: full,
       inner: el.scrollHeight > el.clientHeight + 1,
-      inline: el.hasAttribute('style') || el.hasAttribute('data-fit'),
+      styled: el.hasAttribute('style'), // nothing writes an inline style any more
       docH: document.documentElement.scrollHeight,
       vh: innerHeight,
       hOver: document.documentElement.scrollWidth > innerWidth,
       ctl: vis('.play-btn') && vis('.mode') && vis('.settings'),
       boxIn: vis('.now__ayah'),
+      footOk: (() => { // one line, with Feedback and the dua inside it
+        const f = document.querySelector('.foot').getBoundingClientRect();
+        const fb = document.querySelector('.foot__feedback').getBoundingClientRect();
+        const d = document.querySelector('.foot__dua').getBoundingClientRect();
+        const duaFits = d.width === 0 || (fb.right <= d.left + 0.5 && d.right <= f.right + 1); // the dua may be hidden at 980px
+        return f.height <= 30 && fb.right <= f.right + 1 && duaFits;
+      })(),
+      barOk: (() => { // mode, transport and settings do not overlap
+        const r = (s) => document.querySelector(s).getBoundingClientRect();
+        const m = r('.mode'), t = r('.transport'), g = r('.settings');
+        return m.right <= t.left + 0.5 && t.right <= g.left + 0.5;
+      })(),
     };
   });
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -93,7 +105,7 @@ async page => {
         await page.waitForTimeout(250);
         const m = await measure();
         const mode = words ? 'words' : 'plain';
-        const desk = w >= 980 && h >= 600;
+        const desk = w >= 980 && h >= 680;
         const bad = [];
         if (!m.label.endsWith(tail)) bad.push(`LABEL_MISMATCH(${m.label})`);
         if (m.hOver) bad.push('H-OVERFLOW');
@@ -102,12 +114,14 @@ async page => {
           if (m.font !== '40px') bad.push(`FONT(${m.font})`);
           if (m.docH !== m.vh) bad.push(`PAGE-SCROLL(${m.docH}/${m.vh})`);
           if (!m.ctl) bad.push('CONTROLS-HIDDEN');
+          if (!m.footOk) bad.push('FOOTER-WRAPS-OR-OVERLAPS');
+          if (!m.barOk) bad.push('BAR-OVERLAP');
           if (!m.boxIn) bad.push('BOX-OUT-OF-VIEW');
           state = m.inner ? 'INNER-SCROLL' : 'FULL';
           if (m.inner && Math.abs(m.topGap) > 1) bad.push(`FIRST-ROW-NOT-AT-TOP(gap ${m.topGap})`);
           if (!m.inner && Math.abs(m.topGap - m.bottomGap) > 2) bad.push(`NOT-CENTRED(top ${m.topGap}, bottom ${m.bottomGap})`);
         } else {
-          if (m.inline) bad.push('INLINE-STYLE');
+          if (m.styled) bad.push('HAS-STYLE-ATTRIBUTE');
           if (m.inner) bad.push('INNER-SCROLL');
           state = 'NATURAL';
         }

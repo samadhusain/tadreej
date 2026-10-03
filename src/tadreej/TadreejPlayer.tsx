@@ -17,6 +17,9 @@ import { useAyahScroll } from './follow';
 import { hasTimings } from './words';
 import './tadreej.css';
 
+/* Desk mode: the same query as the desk block in tadreej.css. */
+const DESK_QUERY = '(min-width: 980px) and (min-height: 680px)';
+
 /* Verse meter gradient — lime → deep green by position */
 function lerpColor(a: string, b: string, t: number) {
   const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16);
@@ -57,18 +60,39 @@ export default function TadreejPlayer() {
   const engine = engineRef.current;
   const settings = ui?.settings;
 
-  // Follow the audio clock while words are on screen. The engine emits once
-  // per ayah, which is too coarse to track a word.
   const hasWords = Boolean(ui?.words);
   const ayahRef = useRef<HTMLParagraphElement>(null);
-  // Keep the sounding row in view: the ayah box scrolls in desk mode, the page
-  // elsewhere. New ayah to the top, plus a fade cue in desk mode. ui.words is a fresh array on every emit, so
-  // the key is the ayah text and whether words show.
+  // Keep the sounding row in view: the ayah box scrolls in desk mode, the page elsewhere.
+  // The key marks a new ayah. It is the ayah text plus whether words show,
+  // because ui.words is a fresh array on every emit.
   useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, activeWord, {
     playing: Boolean(ui?.playing),
     sheetOpen: sheetOpen || feedbackOpen,
     gateVisible: Boolean(ui?.gateVisible),
   });
+
+  // Desk mode: Escape or a press outside closes the Settings panel.
+  useEffect(() => {
+    const desk = window.matchMedia(DESK_QUERY);
+    const panel = () => document.querySelector<HTMLDetailsElement>('.settings');
+    const onKey = (e: KeyboardEvent) => {
+      const p = panel();
+      if (e.key === 'Escape' && desk.matches && p) p.open = false;
+    };
+    const onPress = (e: PointerEvent) => {
+      const p = panel();
+      if (desk.matches && p?.open && !p.contains(e.target as Node)) p.open = false;
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPress);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPress);
+    };
+  }, []);
+
+  // Follow the audio clock while words are on screen. The engine emits once
+  // per ayah, which is too coarse to track a word.
   useEffect(() => {
     if (!ui?.playing || !hasWords) return;
     let frame = requestAnimationFrame(function tick() {
