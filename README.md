@@ -74,12 +74,14 @@ The build serves from the root of a domain. To serve it from a subpath, set `VIT
 
 ### The two extra reciters
 
-Abdirashid Ali Sufi and Noreen Muhammad Siddique exist only as whole-surah recordings, so Tadreej cuts them into per-ayah files. The public site hosts these files. To host your own copy:
+Abdirashid Ali Sufi and Noreen Muhammad Siddique exist only as whole-surah recordings, so Tadreej cuts them into per-ayah files. By default, the build loads these files from the public host, `https://tadreej-audio.samad.sh`. If you fork Tadreej, host your own copy and do not load the public host. To host your own copy:
 
 1. Install [uv](https://docs.astral.sh/uv/) and [ffmpeg](https://ffmpeg.org/).
 2. Run `uv run --python 3.13 scripts/build_audio.py cut`. It downloads each surah and cuts it into `tadreej-audio/`, about 2.7 GB for both reciters. It skips files that already exist.
 3. Serve `tadreej-audio/` from a web server.
 4. Build the app with `VITE_EXTRA_AUDIO_BASE` set to that address, for example `VITE_EXTRA_AUDIO_BASE=https://audio.example.com npm run build`.
+
+To leave the two reciters out, set `VITE_EXTRA_AUDIO_BASE` to a blank value, for example `VITE_EXTRA_AUDIO_BASE= npm run build`.
 
 The timings are already in `scripts/timings/`, so you only need the `cut` step. The recordings are QuranicAudio's, and their terms cover personal, non-commercial use.
 

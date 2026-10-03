@@ -329,6 +329,8 @@
   width: 22px; height: 22px; accent-color: var(--green); flex: none;
 }
 
+.tadreej-root .field--row.is-disabled{ opacity: 0.5; }
+
 
 /* ───────── Footer ─────────
    The first and last credit lines span the row. The dua sits beside
@@ -719,6 +721,108 @@
   /* the reading panel gets the room it deserves */
   .tadreej-root .now__surah-ar{ font-size: 30px; }
   .tadreej-root .now__ayah{ font-size: clamp(34px, 2.8vw, 48px); line-height: 2; }
+}
+
+
+/* ───────── Desk mode: one viewport, fixed type size ─────────
+   Only from 980x680 up. Everything outside this query renders as it did
+   before desk mode. The page is one viewport tall and never scrolls. The
+   reading card takes the height the header, control bar and footer leave.
+   The ayah has one font size and starts at the same place every time; a
+   long ayah scrolls inside its box (useAyahScroll follows the sounding row).
+   The controls form one bar along the bottom: mode, transport, settings.   */
+@media (min-width: 980px) and (min-height: 680px) {
+  .tadreej-root{ box-sizing: border-box; height: 100dvh; padding: 16px 24px; }
+
+  .tadreej-root .app{
+    max-width: none; margin: 0; height: 100%; min-height: 0;
+    padding: 12px 34px 12px;
+  }
+
+  .tadreej-root .topbar{ padding: 0 2px 10px; }
+
+  .tadreej-root .screen{
+    flex: 1; min-height: 0;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "now  now       now"
+      "mode transport settings"
+      "foot foot      foot";
+    gap: 14px 24px;
+    align-items: center;
+  }
+
+  /* The rail's children become the bar's three cells. */
+  .tadreej-root .rail{ display: contents; }
+  .tadreej-root .mode{ grid-area: mode; justify-self: start; width: min(300px, 100%); }
+  .tadreej-root .transport{ grid-area: transport; padding: 0; }
+  .tadreej-root .settings{
+    grid-area: settings; justify-self: end; width: min(300px, 100%); height: 64px;
+    position: relative; overflow: visible;
+  }
+
+  .tadreej-root .now{
+    align-self: stretch; min-height: 0;
+    padding: 22px clamp(28px, 6vw, 140px) 20px;
+  }
+
+  /* Fixed size. A short ayah is centred in the box; a long one starts at the
+     top and scrolls (safe centring falls back to the start on overflow). */
+  .tadreej-root .now__ayah{
+    font-size: 40px; line-height: 2;
+    flex: 1 1 0; min-height: 0; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+  }
+  .tadreej-root .now__ayah--words{ gap: .15em .1em; align-content: safe center; }
+  /* Plain text is not a flex container: make it one so it centres too. */
+  .tadreej-root .now__ayah:not(.now__ayah--words){ display: flex; flex-direction: column; justify-content: safe center; }
+  .tadreej-root .word{ padding: 0 .16em .16em; border-radius: .3em; }
+  .tadreej-root .word__tr{ font-size: .34em; }
+
+  /* More text below: fade the bottom edge of the box. */
+  .tadreej-root .now__ayah[data-more]{
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 72px), transparent);
+            mask-image: linear-gradient(to bottom, #000 calc(100% - 72px), transparent);
+  }
+
+  /* Settings opens upward from its button and scrolls inside itself. */
+  .tadreej-root .settings summary{ height: 100%; padding-block: 0; border-radius: var(--r-card); }
+  .tadreej-root .settings__grid{
+    position: absolute; right: 0; bottom: calc(100% + 12px); z-index: 30;
+    width: 340px; max-height: calc(100dvh - 240px); overflow-y: auto;
+    padding: 18px 20px 20px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-card); box-shadow: var(--shadow-lg);
+  }
+
+  /* Footer credits stay on one line from 1180px, and wrap to two below: type and gaps shrink with the width. */
+  .tadreej-root .foot{
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 0 4px; font-size: clamp(9.5px, .8vw, 11.5px);
+  }
+  .tadreej-root .foot__credits{ display: flex; flex-wrap: nowrap; white-space: nowrap; gap: 0 clamp(8px, 1.2vw, 20px); }
+  .tadreej-root .foot__feedback{ float: none; margin-left: clamp(8px, 1.2vw, 20px); }
+  .tadreej-root .foot__feedback::after{ inset: -10px; }
+  .tadreej-root .foot__dua{ font-size: 15px; }
+  /* At the narrowest desk width the credits take the whole line, so the decorative dua steps aside. */
+  @media (max-width: 1010px) {
+    .tadreej-root .foot__dua{ display: none; }
+  }
+  /* With the extra-audio credit the line is wider than a narrow desk window: let it wrap to two lines. */
+  @media (max-width: 1180px) {
+    .tadreej-root .foot__credits{ flex-wrap: wrap; white-space: normal; row-gap: 2px; }
+  }
+
+  /* Short laptop screens: trim the chrome so the ayah keeps the height. */
+  @media (max-height: 820px) {
+    .tadreej-root{ padding-top: 8px; padding-bottom: 8px; }
+    .tadreej-root .app{ padding-top: 6px; padding-bottom: 6px; }
+    .tadreej-root .topbar{ padding-bottom: 6px; }
+    .tadreej-root .screen{ gap: 10px 24px; }
+    .tadreej-root .now{ padding-top: 14px; padding-bottom: 14px; gap: 8px; }
+    .tadreej-root .now__surah-ar{ font-size: 24px; }
+  }
 }
 
 

@@ -24,3 +24,4 @@ tadreej-audio/
 # OS and logs
 .DS_Store
 *.log
+.playwright-cli/

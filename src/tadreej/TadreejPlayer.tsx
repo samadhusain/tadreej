@@ -15,8 +15,12 @@ import {
   surahMeta,
   type RangeEnd,
 } from './range';
+import { useAyahScroll } from './follow';
 import { hasTimings } from './words';
 import './tadreej.css';
+
+/* Desk mode: the same query as the desk block in tadreej.css. */
+const DESK_QUERY = '(min-width: 980px) and (min-height: 680px)';
 
 /* Verse meter gradient — lime → deep green by position */
 function lerpColor(a: string, b: string, t: number) {
@@ -71,17 +75,50 @@ export default function TadreejPlayer() {
   const engine = engineRef.current;
   const settings = ui?.settings;
 
+  const hasWords = Boolean(ui?.words);
+  // Off, the setting hands both the class and the follow "no active word".
+  const highlightOn = Boolean(settings?.highlight);
+  const shownWord = highlightOn ? activeWord : 0;
+  const ayahRef = useRef<HTMLParagraphElement>(null);
+  // Keep the sounding row in view: the ayah box scrolls in desk mode, the page elsewhere.
+  // The key marks a new ayah. It is the ayah text plus whether words show,
+  // because ui.words is a fresh array on every emit.
+  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, shownWord, {
+    playing: Boolean(ui?.playing),
+    sheetOpen: sheetOpen || feedbackOpen || driveSetupOpen,
+    gateVisible: Boolean(ui?.gateVisible),
+  });
+
+  // Desk mode: Escape or a press outside closes the Settings panel.
+  useEffect(() => {
+    const desk = window.matchMedia(DESK_QUERY);
+    const panel = () => document.querySelector<HTMLDetailsElement>('.settings');
+    const onKey = (e: KeyboardEvent) => {
+      const p = panel();
+      if (e.key === 'Escape' && desk.matches && p) p.open = false;
+    };
+    const onPress = (e: PointerEvent) => {
+      const p = panel();
+      if (desk.matches && p?.open && !p.contains(e.target as Node)) p.open = false;
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPress);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPress);
+    };
+  }, []);
+
   // Follow the audio clock while words are on screen. The engine emits once
   // per ayah, which is too coarse to track a word.
-  const hasWords = Boolean(ui?.words);
   useEffect(() => {
-    if (!ui?.playing || !hasWords) return;
+    if (!ui?.playing || !hasWords || !highlightOn) return;
     let frame = requestAnimationFrame(function tick() {
       setActiveWord(engineRef.current?.activeWord() ?? 0);
       frame = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(frame);
-  }, [ui?.playing, hasWords]);
+  }, [ui?.playing, hasWords, highlightOn]);
 
   // Keyboard shortcuts: Space play/pause · ←/→ step · P picker · L/S mode
   useEffect(() => {
@@ -199,16 +236,16 @@ export default function TadreejPlayer() {
             </div>
 
             {ui.words ? (
-              <p className="now__ayah now__ayah--words" dir="rtl" lang="ar">
+              <p ref={ayahRef} className="now__ayah now__ayah--words" dir="rtl" lang="ar">
                 {ui.words.map((w, i) => (
-                  <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === activeWord ? ' is-active' : ''}`}>
+                  <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === shownWord ? ' is-active' : ''}`}>
                     <span className="word__ar">{w.ar}</span>
                     <span className="word__tr" dir="ltr" lang="en">{w.tr}</span>
                   </span>
                 ))}
               </p>
             ) : (
-              <p className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
+              <p ref={ayahRef} className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
             )}
 
             <div className="now__progress">
@@ -326,13 +363,25 @@ export default function TadreejPlayer() {
                 <label className="field field--row">
                   <input
                     type="checkbox"
+                    data-setting="wordByWord"
                     checked={settings.wordByWord}
                     onChange={(e) => engine?.updateSettings({ wordByWord: e.target.checked })}
                   />
                   <span>
                     Word-by-word translation{' '}
-                    <em>({hasTimings(settings.reciter) ? 'highlights the word being recited' : 'no word highlight for this reciter'})</em>
+                    <em>({hasTimings(settings.reciter) ? 'shows each word’s meaning' : 'no word highlight for this reciter'})</em>
                   </span>
+                </label>
+
+                <label className={`field field--row${settings.wordByWord ? '' : ' is-disabled'}`}>
+                  <input
+                    type="checkbox"
+                    data-setting="highlight"
+                    checked={settings.highlight}
+                    disabled={!settings.wordByWord}
+                    onChange={(e) => engine?.updateSettings({ highlight: e.target.checked })}
+                  />
+                  <span>Highlight the word being recited <em>(the view follows it)</em></span>
                 </label>
 
                 <button className="settings__drive" aria-haspopup="dialog" onClick={() => setDriveSetupOpen(true)}>

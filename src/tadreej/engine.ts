@@ -28,7 +28,7 @@ import {
   type RangeEnd,
   type UnitRef,
 } from './range';
-import { DEFAULT_RECITER, EVERYAYAH_BASE, buildReciters, resolveReciterId } from './reciters';
+import { DEFAULT_RECITER, EVERYAYAH_BASE, buildReciters, extraAudioBase, resolveReciterId } from './reciters';
 import { activeWord, alignWords, parseWordsPage, wordsUrl, type AyahWords, type WordView } from './words';
 
 const TEXT_API = 'https://api.alquran.cloud/v1/page';
@@ -37,8 +37,9 @@ const LS = 'tadreej.v1';
 const LS_RECENT = 'tadreej.recent';
 
 /** The reciters this build offers. Sufi and Noreen join the seven
- *  everyayah.com reciters only when VITE_EXTRA_AUDIO_BASE is set. */
-export const RECITERS = buildReciters(import.meta.env.VITE_EXTRA_AUDIO_BASE);
+ *  everyayah.com reciters, from the public host unless VITE_EXTRA_AUDIO_BASE
+ *  names another address or is blank (which leaves them out). */
+export const RECITERS = buildReciters(extraAudioBase(import.meta.env.VITE_EXTRA_AUDIO_BASE));
 export const HAS_EXTRA_AUDIO = RECITERS.some((r) => r.base !== undefined);
 
 export interface TadreejSettings {
@@ -58,6 +59,8 @@ export interface TadreejSettings {
   repeatPage: boolean;
   /** Show each word's translation under it. While on, the app calls the Quran.com API. */
   wordByWord: boolean;
+  /** Highlight the word being recited, and follow it. Needs wordByWord. */
+  highlight: boolean;
   playing?: boolean;
 }
 
@@ -65,8 +68,13 @@ const DEFAULTS: TadreejSettings = {
   unit: 'page', page: 1, surah: 1,
   fromPage: 1, rangeEnd: 'surah', toPage: 1,
   mode: 'stepped', reciter: DEFAULT_RECITER,
-  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: true,
+  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: true, highlight: true,
 };
+
+/** Saved settings laid over the defaults, so a key added later loads at its default. */
+export function mergeSettings(saved: Partial<TadreejSettings>): TadreejSettings {
+  return { ...DEFAULTS, ...saved };
+}
 
 /** Everything the UI needs to render, pushed on every change. */
 export interface UiState {
@@ -175,7 +183,7 @@ export class TadreejEngine {
   private load() {
     try {
       const s = JSON.parse(localStorage.getItem(LS) || '{}');
-      this.state = { ...DEFAULTS, ...s };
+      this.state = mergeSettings(s);
     } catch { this.state = { ...DEFAULTS }; }
     // A reciter saved on a build that offered it may be missing from this one.
     this.state.reciter = resolveReciterId(this.state.reciter, RECITERS);
