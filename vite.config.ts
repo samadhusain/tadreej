@@ -70,6 +70,17 @@ export default defineConfig(({ mode }) => {
                 networkTimeoutSeconds: 5,
               },
             },
+            {
+              // Word-by-word translations and timings. The Quran Foundation
+              // developer terms forbid keeping its content longer than a week.
+              urlPattern: /^https:\/\/api\.quran\.com\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'tadreej-words',
+                networkTimeoutSeconds: 5,
+                expiration: { maxAgeSeconds: 7 * 24 * 60 * 60 },
+              },
+            },
           ],
         },
       }),

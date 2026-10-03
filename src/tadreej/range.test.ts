@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   expandPage,
+  pageOf,
   normalizeRange,
   rangeLabel,
   rangePillLabel,
@@ -117,5 +118,21 @@ describe('steppedPlaybacks', () => {
     const r = resolveRange({ fromPage: 4, end: 'surah', toPage: 4 });
     expect(r.ayahs).toHaveLength(270);
     expect(steppedPlaybacks(r.ayahs.length, 1)).toBe(36585);
+  });
+});
+
+describe('pageOf', () => {
+  it('finds the page an ayah is printed on', () => {
+    expect(pageOf(1, 1)).toBe(1);
+    expect(pageOf(2, 255)).toBe(42);
+    expect(pageOf(114, 6)).toBe(604);
+  });
+
+  it('agrees with expandPage for every ayah of a page', () => {
+    for (const { s, a } of expandPage(604)) expect(pageOf(s, a)).toBe(604);
+  });
+
+  it('is 0 for an ayah that does not exist', () => {
+    expect(pageOf(114, 7)).toBe(0);
   });
 });

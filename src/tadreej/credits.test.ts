@@ -17,6 +17,10 @@ describe('footerCredits', () => {
     expect(hrefs(true)).toContain('https://github.com/QUD-Technologies/quranic-universal-audio');
   });
 
+  it('always credits Quran.com for the word-by-word translation', () => {
+    for (const extra of [false, true]) expect(hrefs(extra)).toContain('https://quran.com');
+  });
+
   it('always calls the code open source and links the repo', () => {
     for (const extra of [false, true]) {
       const code = footerCredits(extra).find((line) => line.label === 'Code:');

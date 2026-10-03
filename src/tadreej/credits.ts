@@ -30,6 +30,11 @@ export function footerCredits(hasExtraAudio: boolean): CreditLine[] {
       ],
     },
     {
+      label: 'Words:',
+      joiner: ' · ',
+      links: [{ text: 'Quran.com', href: 'https://quran.com' }],
+    },
+    {
       label: 'Code:',
       joiner: ' · ',
       links: [{ text: 'open source on GitHub', href: REPO_URL }],

@@ -20,6 +20,7 @@ import {
   expandPage,
   expandSurah,
   normalizeRange,
+  pageOf,
   rangePillLabel,
   resolveRange,
   surahMeta,
@@ -28,6 +29,7 @@ import {
   type UnitRef,
 } from './range';
 import { DEFAULT_RECITER, EVERYAYAH_BASE, buildReciters, resolveReciterId } from './reciters';
+import { activeWord, alignWords, parseWordsPage, wordsUrl, type AyahWords, type WordView } from './words';
 
 const TEXT_API = 'https://api.alquran.cloud/v1/page';
 const TEXT_SURAH_API = 'https://api.alquran.cloud/v1/surah';
@@ -54,6 +56,8 @@ export interface TadreejSettings {
   stepPause: number;
   ayahGap: number;
   repeatPage: boolean;
+  /** Show each word's translation under it. While on, the app calls the Quran.com API. */
+  wordByWord: boolean;
   playing?: boolean;
 }
 
@@ -61,7 +65,7 @@ const DEFAULTS: TadreejSettings = {
   unit: 'page', page: 1, surah: 1,
   fromPage: 1, rangeEnd: 'surah', toPage: 1,
   mode: 'stepped', reciter: DEFAULT_RECITER,
-  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true,
+  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: true,
 };
 
 /** Everything the UI needs to render, pushed on every change. */
@@ -73,6 +77,7 @@ export interface UiState {
   surahAr: string;
   surahEn: string;
   ayahText: string;
+  words: WordView[] | null;  // the ayah word by word, or null to show ayahText
   stepLabel: string;
   meterCount: number;        // segments in the verse meter
   meterStep: number;         // scope of current step
@@ -105,6 +110,8 @@ export class TadreejEngine {
   state: TadreejSettings = { ...DEFAULTS };
   ayahs: UnitRef[] = [];
   textMap: Record<string, string> = {};
+  /** Word translations and timings, by `reciter:page`. Filled as pages are reached. */
+  private wordPages: Record<string, Record<string, AyahWords>> = {};
 
   private player: HTMLAudioElement;
   private onChange: (s: UiState) => void;
@@ -193,6 +200,7 @@ export class TadreejEngine {
       surahAr: m?.arabic || '',
       surahEn: m && item ? `${m.name} · Ayah ${item.a}` : '',
       ayahText: item ? this.textMap[`${item.s}:${item.a}`] || '…' : '…',
+      words: this.currentWords(),
       stepLabel: stepLabel(this.ayahs.length, this.state.mode, this.meterStep, this.meterPos),
       meterCount: this.ayahs.length,
       meterStep: this.meterStep,
@@ -302,6 +310,8 @@ export class TadreejEngine {
       this.meterStep = step;
       this.meterPos = pos;
       this.setMediaMetadata(item, step);
+      this.loadWords(item);
+      this.loadWords(this.ayahs[pos + 1]); // the next page arrives before its first ayah
       this.emit();
 
       const finish = (val: boolean) => { cleanup(); resolve(val); };
@@ -520,6 +530,7 @@ export class TadreejEngine {
     this.currentItem = this.ayahs[0] || null;
     this.save();
     await this.loadPageText(page);
+    this.loadWords(this.currentItem);
     this.emit();
     if (play) this.startPlayback();
   }
@@ -535,6 +546,7 @@ export class TadreejEngine {
     this.currentItem = this.ayahs[0] || null;
     this.save();
     await this.loadSurahText(surah);
+    this.loadWords(this.currentItem);
     this.emit();
     if (play) this.startPlayback();
   }
@@ -560,6 +572,7 @@ export class TadreejEngine {
     this.currentItem = this.ayahs[0] || null;
     this.save();
     await this.loadPagesText(resolved.pages);
+    this.loadWords(this.currentItem);
     this.emit();
     if (play) this.startPlayback();
   }
@@ -575,6 +588,7 @@ export class TadreejEngine {
   updateSettings(patch: Partial<TadreejSettings>) {
     Object.assign(this.state, patch);
     this.save();
+    if (patch.wordByWord || patch.reciter) this.loadWords(this.currentItem);
     // Reciter change mid-playback: restart from current step with new voice
     if (patch.reciter && this.active) { this.startStep = this.curStep; this.startPlayback(); }
   }
@@ -596,6 +610,50 @@ export class TadreejEngine {
     this.hideGate();
     this.startStep = this.curStep;
     this.startPlayback();
+  }
+
+  /* ---------- Word by word (display only; audio works without it) ---------- */
+
+  private wordsOf(item: UnitRef | null): AyahWords | undefined {
+    if (!item || !this.state.wordByWord) return undefined;
+    return this.wordPages[`${this.state.reciter}:${pageOf(item.s, item.a)}`]?.[`${item.s}:${item.a}`];
+  }
+
+  private currentWords(): WordView[] | null {
+    const item = this.currentItem;
+    const words = this.wordsOf(item);
+    const text = item && this.textMap[`${item.s}:${item.a}`];
+    return item && words && text ? alignWords(text, words.tr, item.a) : null;
+  }
+
+  /** Fetch the words of the page that holds `item`, once per reciter: the
+   *  timings differ by reciter. A failed page is asked for again next time. */
+  private async loadWords(item: UnitRef | null | undefined) {
+    if (!item || !this.state.wordByWord) return;
+    const reciter = this.state.reciter;
+    const page = pageOf(item.s, item.a);
+    const key = `${reciter}:${page}`;
+    if (this.wordPages[key]) return;
+    this.wordPages[key] = {};
+    try {
+      const res = await fetch(wordsUrl(page, reciter));
+      if (!res.ok) throw new Error(String(res.status));
+      this.wordPages[key] = parseWordsPage(await res.json());
+      this.emit();
+    } catch (e) {
+      delete this.wordPages[key];
+      console.warn('Word load failed for page', page, e);
+    }
+  }
+
+  /** The word sounding now, as its number in the ayah, or 0 for none: in a
+   *  gap, before playback, or with a reciter that has no timings. */
+  activeWord(): number {
+    const item = this.currentItem;
+    const segs = this.wordsOf(item)?.segs;
+    if (!item || !segs?.length || this.meterPos < 0) return 0;
+    if (this.player.src !== this.audioUrl(item.s, item.a)) return 0;
+    return activeWord(segs, this.player.currentTime * 1000);
   }
 
   /* ---------- Quran text (display only; audio works without it) ---------- */
