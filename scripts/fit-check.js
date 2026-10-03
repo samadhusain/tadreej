@@ -55,12 +55,12 @@ async page => {
       hOver: document.documentElement.scrollWidth > innerWidth,
       ctl: vis('.play-btn') && vis('.mode') && vis('.settings'),
       boxIn: vis('.now__ayah'),
-      footOk: (() => { // one line, with Feedback and the dua inside it
+      footOk: (() => { // at most two lines (the credits wrap below 1180px), with Feedback and the dua inside it
         const f = document.querySelector('.foot').getBoundingClientRect();
         const fb = document.querySelector('.foot__feedback').getBoundingClientRect();
         const d = document.querySelector('.foot__dua').getBoundingClientRect();
         const duaFits = d.width === 0 || (fb.right <= d.left + 0.5 && d.right <= f.right + 1); // the dua may be hidden at 980px
-        return f.height <= 30 && fb.right <= f.right + 1 && duaFits;
+        return f.height <= 34 && fb.right <= f.right + 1 && duaFits;
       })(),
       barOk: (() => { // mode, transport and settings do not overlap
         const r = (s) => document.querySelector(s).getBoundingClientRect();
@@ -75,7 +75,7 @@ async page => {
     await page.waitForSelector('.now__ayah');
     // The word-by-word setting persists in localStorage; set it through the checkbox.
     await page.evaluate(() => { document.querySelector('.settings').open = true; });
-    const box = page.locator('.settings input[type=checkbox]').nth(1);
+    const box = page.locator('.settings input[data-setting=wordByWord]');
     if ((await box.isChecked()) !== words) await box.click();
     await page.evaluate(() => { document.querySelector('.settings').open = false; });
     for (const [name, q, tail] of ayahs) {
@@ -130,6 +130,17 @@ async page => {
       }
     }
   }
+  // Leave word-by-word and the highlight on, as a fresh browser has them.
+  await page.goto(BASE + '?page=1');
+  await page.waitForSelector('.now__ayah');
+  await page.evaluate(() => {
+    document.querySelector('.settings').open = true;
+    for (const k of ['wordByWord', 'highlight']) {
+      const b = document.querySelector(`.settings input[data-setting=${k}]`);
+      if (!b.checked) b.click();
+    }
+    document.querySelector('.settings').open = false;
+  });
   out.push(problems.length ? 'PROBLEMS\n' + problems.join('\n') : 'ALL CHECKS PASSED');
   return out.join('\n');
 }

@@ -324,6 +324,8 @@
   width: 22px; height: 22px; accent-color: var(--green); flex: none;
 }
 
+.tadreej-root .field--row.is-disabled{ opacity: 0.5; }
+
 
 /* ───────── Footer ─────────
    The first and last credit lines span the row. The dua sits beside
@@ -761,7 +763,7 @@
     border-radius: var(--r-card); box-shadow: var(--shadow-lg);
   }
 
-  /* Footer credits stay on one line from 980px: type and gaps shrink with the width. */
+  /* Footer credits stay on one line from 1180px, and wrap to two below: type and gaps shrink with the width. */
   .tadreej-root .foot{
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     padding: 0 4px; font-size: clamp(9.5px, .8vw, 11.5px);
@@ -773,6 +775,10 @@
   /* At the narrowest desk width the credits take the whole line, so the decorative dua steps aside. */
   @media (max-width: 1010px) {
     .tadreej-root .foot__dua{ display: none; }
+  }
+  /* With the extra-audio credit the line is wider than a narrow desk window: let it wrap to two lines. */
+  @media (max-width: 1180px) {
+    .tadreej-root .foot__credits{ flex-wrap: wrap; white-space: normal; row-gap: 2px; }
   }
 
   /* Short laptop screens: trim the chrome so the ayah keeps the height. */

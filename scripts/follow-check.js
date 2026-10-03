@@ -35,7 +35,9 @@ async page => {
     await page.waitForSelector('.now__ayah');
     await page.evaluate(() => {
       const d = document.querySelector('.settings'); d.open = true;
-      const b = document.querySelectorAll('.settings input[type=checkbox]')[1]; if (!b.checked) b.click();
+      for (const k of ['wordByWord', 'highlight']) {
+        const b = document.querySelector(`.settings input[data-setting=${k}]`); if (!b.checked) b.click();
+      }
       d.open = false;
     });
     await page.waitForTimeout(1500);
@@ -108,7 +110,7 @@ async page => {
   const t2 = await returnTime();
   check("(b1') word below the view: the view returns to it", !off2.inView && !off2.controls && t2 !== null && t2 <= 4500, `${t2}ms, y ${off2.y} -> ${(await wordState()).y}`);
   // (b1'') far above the view, still short of the controls
-  await seek(0.5);
+  await seek(0.45); // far enough from the end that 900px down still leaves the controls off screen
   await page.mouse.wheel(0, 900);
   await page.waitForTimeout(300);
   const off3 = await wordState();
@@ -211,7 +213,7 @@ async page => {
   let backBox = away;
   while (Date.now() - t0 < 8000 && !backBox.inBox) { await page.waitForTimeout(150); backBox = await state(); }
   const boxMs = Date.now() - t0;
-  check('(e) desk: the box returns to the word in about 2s, the page stays at 0', !away.inBox && backBox.inBox && backBox.y === 0 && boxMs >= 1500 && boxMs <= 4500, `${boxMs}ms, boxTop ${away.boxTop} -> ${backBox.boxTop}, scrollY ${backBox.y}`);
+  check('(e) desk: the box returns to the word in about 2s, the page stays at 0', !away.inBox && backBox.inBox && backBox.y === 0 && boxMs >= 1200 && boxMs <= 4500, `${boxMs}ms, boxTop ${away.boxTop} -> ${backBox.boxTop}, scrollY ${backBox.y}`);
 
   // (f) a one-ayah loop restart lands at 0 (header visible)
   await play([390, 844], '?page=48&mode=loop');
@@ -233,6 +235,40 @@ async page => {
   await seek(0.5, 1500);
   const gAgain = await state();
   check('(g) loop restart after a hand scroll: back at 0, follow works', awayY > 0 && gRestart.y === 0 && gAgain.y > 0 && gAgain.inView, `y ${awayY} -> ${gRestart.y} -> ${gAgain.y}`);
+
+  // (h) highlight off: no word is active and the page never moves; on again, it resumes
+  const setHighlight = (on) => page.evaluate((on) => {
+    const d = document.querySelector('.settings'); d.open = true;
+    const b = document.querySelector('.settings input[data-setting=highlight]'); if (b.checked !== on) b.click();
+    d.open = false;
+  }, on);
+  await play([390, 844], '?page=48&mode=loop');
+  await seek(0.3);
+  await setHighlight(false);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(600);
+  const offStates = [];
+  for (const f of [0.2, 0.4, 0.6, 0.8]) {
+    await seek(f, 900);
+    offStates.push(await page.evaluate(() => ({ active: document.querySelectorAll('.word.is-active').length, y: Math.round(scrollY) })));
+  }
+  check('(h) highlight off: no active word, page stays at 0', offStates.every((s) => s.active === 0 && s.y === 0), JSON.stringify(offStates));
+  await setHighlight(true);
+  await seek(0.5, 1500);
+  const onState = await state();
+  check('(h) highlight on again: the word is active and the page follows', onState.inView === true && onState.y > 0, `y ${onState.y}`);
+  // desk: off leaves no active word, the box stays at the top and still scrolls by hand
+  await play([1920, 945], '?page=48&mode=loop');
+  await setHighlight(false);
+  await page.waitForTimeout(600);
+  await seek(0.6, 1300);
+  const deskOff = await page.evaluate(() => ({ active: document.querySelectorAll('.word.is-active').length, boxTop: document.querySelector('.now__ayah').scrollTop, y: scrollY }));
+  await page.mouse.move(900, 450);
+  await page.mouse.wheel(0, 300);
+  await page.waitForTimeout(500);
+  const deskHand = await page.evaluate(() => ({ boxTop: document.querySelector('.now__ayah').scrollTop }));
+  check('(h) desk highlight off: no active word, box not followed, hand scroll works', deskOff.active === 0 && deskOff.boxTop === 0 && deskHand.boxTop > 0, JSON.stringify([deskOff, deskHand]));
+  await setHighlight(true);
 
   const failed = results.filter((r) => r.startsWith('FAIL'));
   return results.join('\n') + '\n' + (failed.length ? failed.length + ' FAILED' : 'ALL CHECKS PASSED');

@@ -61,11 +61,14 @@ export default function TadreejPlayer() {
   const settings = ui?.settings;
 
   const hasWords = Boolean(ui?.words);
+  // Off, the setting hands both the class and the follow "no active word".
+  const highlightOn = Boolean(settings?.highlight);
+  const shownWord = highlightOn ? activeWord : 0;
   const ayahRef = useRef<HTMLParagraphElement>(null);
   // Keep the sounding row in view: the ayah box scrolls in desk mode, the page elsewhere.
   // The key marks a new ayah. It is the ayah text plus whether words show,
   // because ui.words is a fresh array on every emit.
-  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, activeWord, {
+  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, shownWord, {
     playing: Boolean(ui?.playing),
     sheetOpen: sheetOpen || feedbackOpen,
     gateVisible: Boolean(ui?.gateVisible),
@@ -94,13 +97,13 @@ export default function TadreejPlayer() {
   // Follow the audio clock while words are on screen. The engine emits once
   // per ayah, which is too coarse to track a word.
   useEffect(() => {
-    if (!ui?.playing || !hasWords) return;
+    if (!ui?.playing || !hasWords || !highlightOn) return;
     let frame = requestAnimationFrame(function tick() {
       setActiveWord(engineRef.current?.activeWord() ?? 0);
       frame = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(frame);
-  }, [ui?.playing, hasWords]);
+  }, [ui?.playing, hasWords, highlightOn]);
 
   // Keyboard shortcuts: Space play/pause · ←/→ step · P picker · L/S mode
   useEffect(() => {
@@ -220,7 +223,7 @@ export default function TadreejPlayer() {
             {ui.words ? (
               <p ref={ayahRef} className="now__ayah now__ayah--words" dir="rtl" lang="ar">
                 {ui.words.map((w, i) => (
-                  <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === activeWord ? ' is-active' : ''}`}>
+                  <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === shownWord ? ' is-active' : ''}`}>
                     <span className="word__ar">{w.ar}</span>
                     <span className="word__tr" dir="ltr" lang="en">{w.tr}</span>
                   </span>
@@ -345,13 +348,25 @@ export default function TadreejPlayer() {
                 <label className="field field--row">
                   <input
                     type="checkbox"
+                    data-setting="wordByWord"
                     checked={settings.wordByWord}
                     onChange={(e) => engine?.updateSettings({ wordByWord: e.target.checked })}
                   />
                   <span>
                     Word-by-word translation{' '}
-                    <em>({hasTimings(settings.reciter) ? 'highlights the word being recited' : 'no word highlight for this reciter'})</em>
+                    <em>({hasTimings(settings.reciter) ? 'shows each word’s meaning' : 'no word highlight for this reciter'})</em>
                   </span>
+                </label>
+
+                <label className={`field field--row${settings.wordByWord ? '' : ' is-disabled'}`}>
+                  <input
+                    type="checkbox"
+                    data-setting="highlight"
+                    checked={settings.highlight}
+                    disabled={!settings.wordByWord}
+                    onChange={(e) => engine?.updateSettings({ highlight: e.target.checked })}
+                  />
+                  <span>Highlight the word being recited <em>(the view follows it)</em></span>
                 </label>
               </div>
             </details>
