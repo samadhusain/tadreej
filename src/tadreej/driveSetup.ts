@@ -22,7 +22,7 @@ export const DRIVE_SETUP_STEPS = [
 ];
 
 export const DRIVE_SETUP_NOTES = [
-  'The link opens Tadreej in Safari, on the page you last played there. iPhone blocks sound until you touch the screen, so tap once to start.',
+  'The link opens Tadreej in Safari, on the page you last played there. A locked iPhone waits until you unlock it. iPhone blocks sound until you touch the screen, so tap once to start.',
   'On Android, an automation app such as MacroDroid can open the same link when Bluetooth connects.',
 ];
 

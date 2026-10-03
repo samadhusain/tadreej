@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DRIVE_SETUP_LEAD, DRIVE_SETUP_STEPS, DRIVE_SETUP_TITLE, driveSetupLink, markDriveSetupSeen, shouldShowDriveSetup } from './driveSetup';
+import { DRIVE_SETUP_NOTES, DRIVE_SETUP_STEPS, driveSetupLink, markDriveSetupSeen, shouldShowDriveSetup } from './driveSetup';
 
 const q = (s: string) => new URLSearchParams(s);
 const memory = (data: Record<string, string> = {}) => ({
@@ -54,11 +54,8 @@ describe('DRIVE_SETUP_STEPS', () => {
   });
 });
 
-describe('drive setup copy', () => {
-  it('names the feature and the vehicle', () => {
-    expect(DRIVE_SETUP_TITLE).toBe('Play when you start driving');
-    expect(DRIVE_SETUP_LEAD).toBe("Set this up once on your iPhone. Then Tadreej opens each time your phone connects to your vehicle's Bluetooth.");
-    expect(DRIVE_SETUP_STEPS[1]).toBe('Tap +, then choose Bluetooth. If you use CarPlay, choose CarPlay instead.');
-    expect(DRIVE_SETUP_STEPS[2]).toBe('Pick your vehicle, then choose Run Immediately.');
+describe('DRIVE_SETUP_NOTES', () => {
+  it('says that a locked iPhone waits for the unlock', () => {
+    expect(DRIVE_SETUP_NOTES[0]).toContain('A locked iPhone waits until you unlock it.');
   });
 });

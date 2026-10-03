@@ -43,7 +43,7 @@ Set this up once on your iPhone. Then Tadreej opens each time your phone connect
 5. Add the Open URLs action and paste this link: `https://tadreej.samad.sh/?autoplay=1`
 6. Tap Done.
 
-The link opens Tadreej in Safari, on the page you last played there. iPhone blocks sound until you touch the screen, so tap once to start.
+The link opens Tadreej in Safari, on the page you last played there. A locked iPhone waits until you unlock it. iPhone blocks sound until you touch the screen, so tap once to start.
 
 On Android, an automation app such as MacroDroid can open the same link when Bluetooth connects.
 

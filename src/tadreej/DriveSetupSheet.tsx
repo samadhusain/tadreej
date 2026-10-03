@@ -15,7 +15,7 @@ export default function DriveSetupSheet({ onClose }: { onClose: () => void }) {
 
   const copy = () => {
     // On failure, do nothing. The link stays selectable.
-    navigator.clipboard.writeText(link).then(() => setCopied(true), () => {});
+    navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {});
   };
 
   return (

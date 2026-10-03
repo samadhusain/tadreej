@@ -303,7 +303,7 @@
 }
 
 .tadreej-root .settings__drive{
-  align-self: flex-start; padding: 4px 0; font-size: 13.5px; font-weight: 600;
+  align-self: flex-start; min-height: 44px; padding: 10px 0; font-size: 13.5px; font-weight: 600;
   color: var(--green); text-decoration: underline; text-underline-offset: 3px;
 }
 
@@ -591,7 +591,7 @@
 .tadreej-root .drivesetup__link code{ font-size: 13px; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
 
 .tadreej-root .drivesetup__copy{
-  align-self: flex-start; border-radius: 999px; padding: 6px 14px;
+  align-self: flex-start; border-radius: 999px; min-height: 44px; padding: 10px 16px;
   background: var(--green-soft); color: var(--green-deep); font-weight: 600; font-size: 13px;
 }
 
