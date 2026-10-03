@@ -302,6 +302,11 @@
   border-top: 1px solid var(--line);
 }
 
+.tadreej-root .settings__drive{
+  align-self: flex-start; padding: 4px 0; font-size: 13.5px; font-weight: 600;
+  color: var(--green); text-decoration: underline; text-underline-offset: 3px;
+}
+
 .tadreej-root .field{ display: flex; flex-direction: column; gap: 6px; }
 
 .tadreej-root .field > span{ font-size: 13px; font-weight: 600; color: var(--ink); }
@@ -565,6 +570,34 @@
   display: block; width: 100%; border-radius: 14px; padding: 14px; margin-top: 6px;
   font-weight: 600; font-size: 15px; color: var(--muted);
 }
+
+
+/* ───────── Drive setup sheet ─────────
+   The same sheet and the same title and lead as the feedback sheet, with a
+   numbered list. The panel scrolls when the steps are taller than the screen. */
+.tadreej-root .drivesetup{ max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; }
+
+.tadreej-root .drivesetup__steps{ margin: 0 0 14px; padding-left: 22px; font-size: 14px; line-height: 1.5; }
+
+.tadreej-root .drivesetup__steps li{ padding-left: 4px; margin-bottom: 8px; }
+
+.tadreej-root .drivesetup__steps li::marker{ font-weight: 700; color: var(--green); }
+
+.tadreej-root .drivesetup__link{
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 8px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+}
+
+.tadreej-root .drivesetup__link code{ font-size: 13px; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+
+.tadreej-root .drivesetup__copy{
+  align-self: flex-start; border-radius: 999px; padding: 6px 14px;
+  background: var(--green-soft); color: var(--green-deep); font-weight: 600; font-size: 13px;
+}
+
+.tadreej-root .drivesetup__note{ font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+
+.tadreej-root .drivesetup__close{ display: block; width: 100%; margin-top: 16px; }
 
 
 /* ───────── Tap-to-start gate (autoplay fallback) ───────── */

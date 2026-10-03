@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HAS_EXTRA_AUDIO, RECITERS, TadreejEngine, type UiState } from './engine';
 import { footerCredits } from './credits';
 import FeedbackSheet from './FeedbackSheet';
+import DriveSetupSheet from './DriveSetupSheet';
+import { markDriveSetupSeen, shouldShowDriveSetup } from './driveSetup';
 import {
   TOTAL_PAGES,
   TOTAL_SURAHS,
@@ -42,6 +44,19 @@ export default function TadreejPlayer() {
   const [rangeSpan, setRangeSpan] = useState(0);
   const rangeTo = Math.min(TOTAL_PAGES, rangeFrom + rangeSpan);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // Opens by itself on the first visit. The initializer has no side effect:
+  // the seen flag is set on close.
+  const [driveSetupOpen, setDriveSetupOpen] = useState(() => {
+    try {
+      return shouldShowDriveSetup(localStorage, new URLSearchParams(window.location.search));
+    } catch {
+      return false; // reading `localStorage` itself can throw
+    }
+  });
+  const closeDriveSetup = () => {
+    try { markDriveSetupSeen(localStorage); } catch { /* noop: reading `localStorage` itself can throw */ }
+    setDriveSetupOpen(false);
+  };
   // The word sounding now, by its number in the ayah. 0 is none.
   const [activeWord, setActiveWord] = useState(0);
 
@@ -80,8 +95,8 @@ export default function TadreejPlayer() {
         if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); eng.dismissGateAndPlay(); }
         return;
       }
-      if (sheetOpen || feedbackOpen) {
-        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); setFeedbackOpen(false); }
+      if (sheetOpen || feedbackOpen || driveSetupOpen) {
+        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); setFeedbackOpen(false); if (driveSetupOpen) closeDriveSetup(); }
         return;
       }
       switch (e.key) {
@@ -98,7 +113,7 @@ export default function TadreejPlayer() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetOpen, feedbackOpen, ui?.gateVisible]);
+  }, [sheetOpen, feedbackOpen, driveSetupOpen, ui?.gateVisible]);
 
   function openSheet() {
     if (!settings) return;
@@ -319,6 +334,10 @@ export default function TadreejPlayer() {
                     <em>({hasTimings(settings.reciter) ? 'highlights the word being recited' : 'no word highlight for this reciter'})</em>
                   </span>
                 </label>
+
+                <button className="settings__drive" aria-haspopup="dialog" onClick={() => setDriveSetupOpen(true)}>
+                  Play when you start driving
+                </button>
               </div>
             </details>
           </div>
@@ -502,6 +521,9 @@ export default function TadreejPlayer() {
 
         {/* ───────── Feedback sheet ───────── */}
         {feedbackOpen && <FeedbackSheet ui={ui} reciterName={reciterName} onClose={() => setFeedbackOpen(false)} />}
+
+        {/* ───────── Drive setup sheet ───────── */}
+        {driveSetupOpen && <DriveSetupSheet onClose={closeDriveSetup} />}
 
         {/* ───────── Tap-to-start overlay (autoplay blocked by iOS) ───────── */}
         <div className="gate" hidden={!ui.gateVisible} onClick={() => engine?.dismissGateAndPlay()}>
