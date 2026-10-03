@@ -56,7 +56,7 @@ export interface TadreejSettings {
   stepPause: number;
   ayahGap: number;
   repeatPage: boolean;
-  /** Show each word's translation under it. Off by default: it calls the Quran.com API. */
+  /** Show each word's translation under it. While on, the app calls the Quran.com API. */
   wordByWord: boolean;
   playing?: boolean;
 }
@@ -65,7 +65,7 @@ const DEFAULTS: TadreejSettings = {
   unit: 'page', page: 1, surah: 1,
   fromPage: 1, rangeEnd: 'surah', toPage: 1,
   mode: 'stepped', reciter: DEFAULT_RECITER,
-  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: false,
+  reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: true,
 };
 
 /** Everything the UI needs to render, pushed on every change. */
