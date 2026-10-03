@@ -729,13 +729,16 @@
     padding: 22px clamp(28px, 6vw, 140px) 20px;
   }
 
-  /* Fixed size, top-anchored: the same words sit in the same place for every ayah. */
+  /* Fixed size. A short ayah is centred in the box; a long one starts at the
+     top and scrolls (safe centring falls back to the start on overflow). */
   .tadreej-root .now__ayah{
     font-size: 40px; line-height: 2;
     flex: 1 1 0; min-height: 0; overflow-y: auto;
     scrollbar-width: thin; scrollbar-color: var(--line) transparent;
   }
-  .tadreej-root .now__ayah--words{ gap: .15em .1em; align-content: flex-start; }
+  .tadreej-root .now__ayah--words{ gap: .15em .1em; align-content: safe center; }
+  /* Plain text is not a flex container: make it one so it centres too. */
+  .tadreej-root .now__ayah:not(.now__ayah--words){ display: flex; flex-direction: column; justify-content: safe center; }
   .tadreej-root .word{ padding: 0 .16em .16em; border-radius: .3em; }
   .tadreej-root .word__tr{ font-size: .34em; }
 

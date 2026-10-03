@@ -1,6 +1,7 @@
 // Usage: npx -y @playwright/cli@latest -s=tadreej run-code --filename=scripts/fit-check.js
 // Needs the dev server on http://localhost:5199. Desk viewports (980x600 up) must show a fixed 40px ayah,
-// the same first-row offset for every ayah, no page scroll, and visible controls: FULL or INNER-SCROLL.
+// no page scroll and visible controls. A fitting ayah (FULL) is centred in its box within 2px; an
+// overflowing one (INNER-SCROLL) has its first row at the box's top padding at scrollTop 0.
 // Other viewports must be untouched (NATURAL). Prints a line per case, then a check summary.
 async page => {
   const BASE = 'http://localhost:5199/';
@@ -19,16 +20,22 @@ async page => {
   ];
   const out = [];
   const problems = [];
-  const firstTops = {}; // `${viewport} ${mode}` -> Set of first-row offsets
   const measure = () => page.evaluate(() => {
     const el = document.querySelector('.now__ayah');
     const b = el.getBoundingClientRect();
     const vis = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; };
-    // The first row's top, relative to the content (so scrolling does not matter).
-    const word = el.querySelector('.word');
-    let top;
-    if (word) top = word.getBoundingClientRect().top;
-    else { const rg = document.createRange(); rg.selectNodeContents(el); top = rg.getClientRects()[0].top; }
+    // The ayah block's top and bottom: from the first to the last word, or the text's line rects.
+    el.scrollTop = 0;
+    const cs = getComputedStyle(el);
+    const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
+    const ws = [...el.querySelectorAll('.word')];
+    let rects;
+    if (ws.length) rects = ws.map((w) => w.getBoundingClientRect());
+    else { const rg = document.createRange(); rg.selectNodeContents(el); rects = [...rg.getClientRects()]; }
+    const blockTop = Math.min(...rects.map((r) => r.top));
+    const blockBottom = Math.max(...rects.map((r) => r.bottom));
+    const topGap = blockTop - (b.top + padT);
+    const bottomGap = (b.bottom - padB) - blockBottom;
     const tops = [...el.querySelectorAll('.word')].map((w) => Math.round(w.getBoundingClientRect().top - b.top + el.scrollTop));
     const rowTops = [...new Set(tops)];
     const rowH = rowTops.length > 1 ? rowTops[1] - rowTops[0] : 0;
@@ -36,7 +43,8 @@ async page => {
     return {
       label: document.querySelector('.now__surah-en').textContent,
       font: getComputedStyle(el).fontSize,
-      firstTop: Math.round(top - b.top + el.scrollTop),
+      topGap: Math.round(topGap * 10) / 10,
+      bottomGap: Math.round(bottomGap * 10) / 10,
       boxH: Math.round(b.height),
       rows: rowTops.length,
       rowsFit: full,
@@ -95,19 +103,19 @@ async page => {
           if (m.docH !== m.vh) bad.push(`PAGE-SCROLL(${m.docH}/${m.vh})`);
           if (!m.ctl) bad.push('CONTROLS-HIDDEN');
           if (!m.boxIn) bad.push('BOX-OUT-OF-VIEW');
-          (firstTops[`${w}x${h} ${mode}`] ||= new Set()).add(m.firstTop);
           state = m.inner ? 'INNER-SCROLL' : 'FULL';
+          if (m.inner && Math.abs(m.topGap) > 1) bad.push(`FIRST-ROW-NOT-AT-TOP(gap ${m.topGap})`);
+          if (!m.inner && Math.abs(m.topGap - m.bottomGap) > 2) bad.push(`NOT-CENTRED(top ${m.topGap}, bottom ${m.bottomGap})`);
         } else {
           if (m.inline) bad.push('INLINE-STYLE');
           if (m.inner) bad.push('INNER-SCROLL');
           state = 'NATURAL';
         }
         if (bad.length) problems.push(`${mode} ${name} ${w}x${h}: ${bad.join(' ')}`);
-        out.push(`${mode} ${name} ${w}x${h} font=${m.font} ${state} boxH=${m.boxH} rows=${m.rows} fit=${m.rowsFit} firstTop=${m.firstTop}${bad.length ? ' !' + bad.join(',') : ''}`);
+        out.push(`${mode} ${name} ${w}x${h} font=${m.font} ${state} boxH=${m.boxH} rows=${m.rows} fit=${m.rowsFit} gaps=${m.topGap}/${m.bottomGap}${bad.length ? ' !' + bad.join(',') : ''}`);
       }
     }
   }
-  for (const [k, v] of Object.entries(firstTops)) if (v.size > 1) problems.push(`first row offset differs at ${k}: ${[...v].join(',')}`);
   out.push(problems.length ? 'PROBLEMS\n' + problems.join('\n') : 'ALL CHECKS PASSED');
   return out.join('\n');
 }

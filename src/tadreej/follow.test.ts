@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { followTarget } from './follow';
+import { followAllowed, followTarget, USER_PAUSE_MS } from './follow';
 
 // A 400px box over 1000px of content, in rows 100px tall: max scroll is 600.
 const box = { clientHeight: 400, scrollHeight: 1000, rowHeight: 100 };
@@ -40,5 +40,27 @@ describe('followTarget', () => {
 
   it('does nothing when the box does not overflow', () => {
     expect(followTarget({ clientHeight: 400, scrollHeight: 400, rowHeight: 100, scrollTop: 0, rowTop: 300 })).toBeNull();
+  });
+});
+
+describe('followAllowed', () => {
+  const ok = { playing: true, settingsOpen: false, sheetOpen: false, gateVisible: false, inputFocused: false, msSinceUserInput: Infinity };
+
+  it('follows while playing with nothing in the way', () => {
+    expect(followAllowed(ok)).toBe(true);
+  });
+
+  it('does not follow when audio is not playing', () => {
+    expect(followAllowed({ ...ok, playing: false })).toBe(false);
+  });
+
+  it.each(['settingsOpen', 'sheetOpen', 'gateVisible', 'inputFocused'] as const)('does not follow when %s', (k) => {
+    expect(followAllowed({ ...ok, [k]: true })).toBe(false);
+  });
+
+  it('pauses for a while after user input, then resumes', () => {
+    expect(followAllowed({ ...ok, msSinceUserInput: 0 })).toBe(false);
+    expect(followAllowed({ ...ok, msSinceUserInput: USER_PAUSE_MS - 1 })).toBe(false);
+    expect(followAllowed({ ...ok, msSinceUserInput: USER_PAUSE_MS })).toBe(true);
   });
 });

@@ -61,10 +61,14 @@ export default function TadreejPlayer() {
   // per ayah, which is too coarse to track a word.
   const hasWords = Boolean(ui?.words);
   const ayahRef = useRef<HTMLParagraphElement>(null);
-  // Desk mode scrolls the ayah inside its box: new ayah to the top, a fade cue,
-  // and the sounding row followed. ui.words is a fresh array on every emit, so
+  // Keep the sounding row in view: the ayah box scrolls in desk mode, the page
+  // elsewhere. New ayah to the top, plus a fade cue in desk mode. ui.words is a fresh array on every emit, so
   // the key is the ayah text and whether words show.
-  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, activeWord);
+  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, activeWord, {
+    playing: Boolean(ui?.playing),
+    sheetOpen: sheetOpen || feedbackOpen,
+    gateVisible: Boolean(ui?.gateVisible),
+  });
   useEffect(() => {
     if (!ui?.playing || !hasWords) return;
     let frame = requestAnimationFrame(function tick() {
