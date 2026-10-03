@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { followAllowed, followTarget, latchReleases, LATCH_STILL_MS } from './follow';
+import { followAllowed, followTarget, latchReleases, STILL_AWAY_MS, STILL_IN_VIEW_MS } from './follow';
 
 // A 400px box over 1000px of content, in rows 100px tall: max scroll is 600.
 const box = { clientHeight: 400, scrollHeight: 1000, rowHeight: 100 };
@@ -90,27 +90,31 @@ describe('followAllowed', () => {
 });
 
 describe('latchReleases', () => {
-  const ok = { latched: true, wordInView: true, touching: false, msSinceScroll: 1000 };
+  const ok = { latched: true, wordInView: true, touching: false, msSinceScroll: 1000, controlsVisible: false };
 
-  it('releases when the word is in view, no touch is down and the view is still', () => {
-    expect(latchReleases(ok)).toBe(true);
-    expect(latchReleases({ ...ok, msSinceScroll: LATCH_STILL_MS })).toBe(true);
+  it('releases when the word is in view and the view has been still for 400ms', () => {
+    expect(STILL_IN_VIEW_MS).toBe(400);
+    expect(latchReleases({ ...ok, msSinceScroll: 400 })).toBe(true);
+    expect(latchReleases({ ...ok, msSinceScroll: 399 })).toBe(false);
+  });
+
+  it('waits for 2000ms of stillness when the word is out of view', () => {
+    expect(STILL_AWAY_MS).toBe(2000);
+    expect(latchReleases({ ...ok, wordInView: false, msSinceScroll: 1999 })).toBe(false);
+    expect(latchReleases({ ...ok, wordInView: false, msSinceScroll: 2000 })).toBe(true);
+  });
+
+  it('never releases while the transport controls are on screen', () => {
+    expect(latchReleases({ ...ok, controlsVisible: true })).toBe(false);
+    expect(latchReleases({ ...ok, controlsVisible: true, wordInView: false, msSinceScroll: 60000 })).toBe(false);
+  });
+
+  it('never releases while a touch is down', () => {
+    expect(latchReleases({ ...ok, touching: true, msSinceScroll: 60000 })).toBe(false);
+    expect(latchReleases({ ...ok, touching: true, wordInView: false, msSinceScroll: 60000 })).toBe(false);
   });
 
   it('does nothing when not latched', () => {
     expect(latchReleases({ ...ok, latched: false })).toBe(false);
-  });
-
-  it('does not release while a touch is in progress', () => {
-    expect(latchReleases({ ...ok, touching: true })).toBe(false);
-  });
-
-  it('does not release within the still time after a scroll', () => {
-    expect(latchReleases({ ...ok, msSinceScroll: 0 })).toBe(false);
-    expect(latchReleases({ ...ok, msSinceScroll: LATCH_STILL_MS - 1 })).toBe(false);
-  });
-
-  it('does not release when the word is out of view', () => {
-    expect(latchReleases({ ...ok, wordInView: false })).toBe(false);
   });
 });
