@@ -1,11 +1,13 @@
 import { useLayoutEffect, type RefObject } from 'react';
 
-/** Smallest Arabic size the ayah shrinks to, in px. Below it the box scrolls. */
+/** Smallest Arabic size the ayah shrinks to, in px. */
 export const MIN_AYAH_PX = 20;
 
 /** The largest whole-pixel size in [min, max] for which `fits` holds.
- *  Binary search. Returns min when nothing fits, so the caller has a floor. */
+ *  Binary search over whole pixels: a fractional max is floored first.
+ *  Returns min when nothing fits, so the caller has a floor. */
 export function fitSize(fits: (size: number) => boolean, min: number, max: number): number {
+  max = Math.floor(max);
   if (max <= min) return max;
   if (fits(max)) return max;
   let lo = min; // assumed to fit, or the floor
@@ -18,33 +20,47 @@ export function fitSize(fits: (size: number) => boolean, min: number, max: numbe
   return lo;
 }
 
-/** Shrink the element's font from its CSS size (the maximum) until its content
- *  fits the box. Reruns when `deps` change and when the box resizes. */
-export function useFitFont(ref: RefObject<HTMLElement | null>, deps: unknown[]) {
+/** Fit an ayah to its box. Shrinks the font from its CSS size (the maximum)
+ *  to MIN_AYAH_PX until the content fits. If it still does not fit:
+ *  - `--fit-overflow: scroll` (fixed-height desktop layout) keeps the floor
+ *    size and the box scrolls inside itself;
+ *  - `--fit-overflow: grow` (everywhere else) restores the CSS size and sets
+ *    data-fit="grow", which lets the box grow and the page scroll.
+ *  Reruns when `key` changes (a new ayah, or words on/off), when the box
+ *  resizes, and once webfonts load. A new key also resets the inner scroll. */
+export function useFitFont(ref: RefObject<HTMLElement | null>, key: string) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let alive = true;
     let lastW = -1;
     let lastH = -1;
     const run = () => {
+      el.removeAttribute('data-fit'); // measure the one-screen box, not the grown one
       el.style.fontSize = '';
-      const max = parseFloat(getComputedStyle(el).fontSize);
-      const size = fitSize((s) => {
+      const cs = getComputedStyle(el);
+      const grow = cs.getPropertyValue('--fit-overflow').trim() === 'grow';
+      const fits = (s: number) => {
         el.style.fontSize = `${s}px`;
         return el.scrollHeight <= el.clientHeight;
-      }, MIN_AYAH_PX, max);
-      el.style.fontSize = `${size}px`;
-    };
-    run();
-    const ro = new ResizeObserver(() => {
-      // Our own font changes never resize the box, but guard against loops anyway.
-      if (el.clientWidth === lastW && el.clientHeight === lastH) return;
+      };
+      const size = fitSize(fits, MIN_AYAH_PX, parseFloat(cs.fontSize));
+      // fits() leaves the font at `size`; at the floor with no fit, grow mode undoes it.
+      if (!fits(size) && grow) {
+        el.style.fontSize = '';
+        el.setAttribute('data-fit', 'grow');
+      }
       lastW = el.clientWidth;
       lastH = el.clientHeight;
+    };
+    el.scrollTop = 0;
+    run();
+    const ro = new ResizeObserver(() => {
+      if (el.clientWidth === lastW && el.clientHeight === lastH) return;
       run();
     });
     ro.observe(el);
-    return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+    document.fonts?.ready.then(() => { if (alive) run(); });
+    return () => { alive = false; ro.disconnect(); };
+  }, [ref, key]);
 }

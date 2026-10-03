@@ -1,8 +1,8 @@
 // Usage: npx -y @playwright/cli@latest -s=tadreej run-code --filename=scripts/fit-check.js
-// Needs the dev server on http://localhost:5199. Prints font size and fit per viewport, ayah and word mode.
+// Needs the dev server on http://localhost:5199. Prints font size and state (FULL, INNER-SCROLL, GROW) per viewport, ayah and word mode.
 async page => {
   const BASE = 'http://localhost:5199/';
-  const sizes = [[1920,1080],[1920,945],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640]];
+  const sizes = [[1920,1080],[1920,945],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500]];
   // [name, query that shows the ayah's page, tail of the on-screen "Surah · Ayah N" label]
   const ayahs = [
     ['2:282', '?page=48', 'Ayah 282'],
@@ -26,6 +26,7 @@ async page => {
       tr: tr ? Math.round(parseFloat(getComputedStyle(tr).fontSize) * 10) / 10 : 0,
       inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth,
       noInner: el.scrollHeight <= el.clientHeight,
+      grow: el.dataset.fit === 'grow',
       hOver: document.documentElement.scrollWidth > innerWidth,
       ctl: t.top >= 0 && t.bottom <= innerHeight,
     };
@@ -48,13 +49,14 @@ async page => {
         await page.goto(BASE + q + '&mode=loop&autoplay=1');
         await page.waitForSelector('.now__ayah');
         await page.evaluate(() => document.querySelector('.gate')?.click());
-        for (let i = 0; i < 300 && !label.endsWith(tail); i++) {
+        for (let i = 0; i < 400 && !label.endsWith(tail); i++) {
           await page.waitForTimeout(150);
           // Read the label, then jump the audio to its end so the walk skips real recitation.
           label = await page.evaluate((t) => {
             const l = document.querySelector('.now__surah-en').textContent;
             const a = document.querySelector('audio');
-            if (!l.endsWith(t) && a.duration > 1) a.currentTime = a.duration - 0.05;
+            // Seek once per ayah: repeated seeks keep restarting the buffering.
+            if (!l.endsWith(t) && a.duration > 1 && a.dataset.skipped !== a.src) { a.dataset.skipped = a.src; a.currentTime = a.duration - 0.05; }
             return l;
           }, tail);
         }
@@ -65,7 +67,8 @@ async page => {
         await page.waitForTimeout(200);
         const m = await measure();
         const bad = m.label.endsWith(tail) ? '' : ` LABEL_MISMATCH(${m.label})`;
-        const state = m.inside && m.noInner ? 'FULL' : m.inside ? 'INNER-SCROLL' : 'OUT-OF-VIEW';
+        // GROW: the ayah did not fit one screen, so the box grew and the page scrolls.
+        const state = m.grow ? (m.noInner ? 'GROW' : 'GROW-CLIPPED') : m.noInner ? (m.inside ? 'FULL' : 'FULL-PAGE-SCROLL') : m.inside ? 'INNER-SCROLL' : 'OUT-OF-VIEW';
         out.push(`${words ? 'words' : 'plain'} ${name} ${w}x${h} font=${m.font} tr=${m.tr} ${state} hOver=${m.hOver} ctl=${m.ctl}${bad}`);
       }
     }

@@ -61,10 +61,19 @@ export default function TadreejPlayer() {
   // per ayah, which is too coarse to track a word.
   const hasWords = Boolean(ui?.words);
   const ayahRef = useRef<HTMLParagraphElement>(null);
-  useFitFont(ayahRef, [Boolean(ui), ui?.ayahText, ui?.words, hasWords]);
-  // Keep the sounding word in view when the ayah is too long to fit.
+  // Refit on a new ayah or on words on/off. ui.words is a fresh array on every
+  // emit, so it cannot be the key.
+  useFitFont(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`);
+  // When the ayah scrolls inside its box, keep the sounding word in view.
+  // Moves the box only, never the page.
   useEffect(() => {
-    ayahRef.current?.querySelector('.word.is-active')?.scrollIntoView({ block: 'nearest' });
+    const box = ayahRef.current;
+    const word = box?.querySelector('.word.is-active');
+    if (!box || !word || box.scrollHeight <= box.clientHeight) return;
+    const b = box.getBoundingClientRect();
+    const w = word.getBoundingClientRect();
+    if (w.top < b.top) box.scrollTop += w.top - b.top;
+    else if (w.bottom > b.bottom) box.scrollTop += w.bottom - b.bottom;
   }, [activeWord]);
   useEffect(() => {
     if (!ui?.playing || !hasWords) return;

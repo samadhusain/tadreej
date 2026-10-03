@@ -22,9 +22,14 @@ describe('fitSize', () => {
     expect(fitSize(() => false, 20, 16)).toBe(16);
   });
 
-  it('calls fits only a handful of times', () => {
-    let calls = 0;
-    fitSize((s) => { calls++; return s <= 37; }, 20, 64);
-    expect(calls).toBeLessThanOrEqual(7);
+  it('probes whole pixels when max is fractional', () => {
+    const probed: number[] = [];
+    const size = fitSize((s) => { probed.push(s); return s <= 30; }, 20, 46.444);
+    expect(probed.every(Number.isInteger)).toBe(true);
+    expect(size).toBe(30);
+  });
+
+  it('returns a whole pixel when a fractional max fits', () => {
+    expect(fitSize(() => true, 20, 46.444)).toBe(46);
   });
 });
