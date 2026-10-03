@@ -13,7 +13,7 @@ import {
   surahMeta,
   type RangeEnd,
 } from './range';
-import { useFitFont } from './fit';
+import { useAyahScroll } from './follow';
 import { hasTimings } from './words';
 import './tadreej.css';
 
@@ -61,20 +61,10 @@ export default function TadreejPlayer() {
   // per ayah, which is too coarse to track a word.
   const hasWords = Boolean(ui?.words);
   const ayahRef = useRef<HTMLParagraphElement>(null);
-  // Refit on a new ayah or on words on/off. ui.words is a fresh array on every
-  // emit, so it cannot be the key.
-  useFitFont(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`);
-  // When the ayah scrolls inside its box, keep the sounding word in view.
-  // Moves the box only, never the page.
-  useEffect(() => {
-    const box = ayahRef.current;
-    const word = box?.querySelector('.word.is-active');
-    if (!box || !word || box.scrollHeight <= box.clientHeight) return;
-    const b = box.getBoundingClientRect();
-    const w = word.getBoundingClientRect();
-    if (w.top < b.top) box.scrollTop += w.top - b.top;
-    else if (w.bottom > b.bottom) box.scrollTop += w.bottom - b.bottom;
-  }, [activeWord]);
+  // Desk mode scrolls the ayah inside its box: new ayah to the top, a fade cue,
+  // and the sounding row followed. ui.words is a fresh array on every emit, so
+  // the key is the ayah text and whether words show.
+  useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, activeWord);
   useEffect(() => {
     if (!ui?.playing || !hasWords) return;
     let frame = requestAnimationFrame(function tick() {

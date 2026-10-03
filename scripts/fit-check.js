@@ -1,9 +1,10 @@
 // Usage: npx -y @playwright/cli@latest -s=tadreej run-code --filename=scripts/fit-check.js
-// Needs the dev server on http://localhost:5199. Desk viewports (980x600 and up) report FULL or INNER-SCROLL.
-// Other viewports must be untouched (NATURAL): no inline font-size, no inner scroll.
+// Needs the dev server on http://localhost:5199. Desk viewports (980x600 up) must show a fixed 40px ayah,
+// the same first-row offset for every ayah, no page scroll, and visible controls: FULL or INNER-SCROLL.
+// Other viewports must be untouched (NATURAL). Prints a line per case, then a check summary.
 async page => {
   const BASE = 'http://localhost:5199/';
-  const sizes = [[1920,1080],[1920,945],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500]];
+  const sizes = [[1920,1080],[1920,945],[1728,990],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500]];
   // [name, query that shows the ayah's page, tail of the on-screen "Surah · Ayah N" label]
   const ayahs = [
     ['2:282', '?page=48', 'Ayah 282'],
@@ -14,22 +15,38 @@ async page => {
     ['73:20', '?page=575', 'Ayah 20'],
     ['5:3', '?page=107', 'Ayah 3'],
     ['1:1', '?page=1', 'Ayah 1'],
+    ['2:6', '?page=3', 'Ayah 6'],
   ];
   const out = [];
+  const problems = [];
+  const firstTops = {}; // `${viewport} ${mode}` -> Set of first-row offsets
   const measure = () => page.evaluate(() => {
     const el = document.querySelector('.now__ayah');
-    const r = el.getBoundingClientRect();
-    const t = document.querySelector('.play-btn').getBoundingClientRect();
-    const tr = document.querySelector('.word__tr');
+    const b = el.getBoundingClientRect();
+    const vis = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; };
+    // The first row's top, relative to the content (so scrolling does not matter).
+    const word = el.querySelector('.word');
+    let top;
+    if (word) top = word.getBoundingClientRect().top;
+    else { const rg = document.createRange(); rg.selectNodeContents(el); top = rg.getClientRects()[0].top; }
+    const tops = [...el.querySelectorAll('.word')].map((w) => Math.round(w.getBoundingClientRect().top - b.top + el.scrollTop));
+    const rowTops = [...new Set(tops)];
+    const rowH = rowTops.length > 1 ? rowTops[1] - rowTops[0] : 0;
+    const full = rowTops.filter((t) => t + rowH <= el.clientHeight).length;
     return {
       label: document.querySelector('.now__surah-en').textContent,
-      font: Math.round(parseFloat(getComputedStyle(el).fontSize) * 10) / 10,
-      tr: tr ? Math.round(parseFloat(getComputedStyle(tr).fontSize) * 10) / 10 : 0,
-      inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth,
-      noInner: el.scrollHeight <= el.clientHeight,
-      inline: el.style.fontSize !== '' || el.hasAttribute('data-fit'),
+      font: getComputedStyle(el).fontSize,
+      firstTop: Math.round(top - b.top + el.scrollTop),
+      boxH: Math.round(b.height),
+      rows: rowTops.length,
+      rowsFit: full,
+      inner: el.scrollHeight > el.clientHeight + 1,
+      inline: el.hasAttribute('style') || el.hasAttribute('data-fit'),
+      docH: document.documentElement.scrollHeight,
+      vh: innerHeight,
       hOver: document.documentElement.scrollWidth > innerWidth,
-      ctl: t.top >= 0 && t.bottom <= innerHeight,
+      ctl: vis('.play-btn') && vis('.mode') && vis('.settings'),
+      boxIn: vis('.now__ayah'),
     };
   });
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -37,10 +54,10 @@ async page => {
     await page.goto(BASE + '?page=1');
     await page.waitForSelector('.now__ayah');
     // The word-by-word setting persists in localStorage; set it through the checkbox.
-    await page.locator('.settings summary').click();
+    await page.evaluate(() => { document.querySelector('.settings').open = true; });
     const box = page.locator('.settings input[type=checkbox]').nth(1);
     if ((await box.isChecked()) !== words) await box.click();
-    await page.locator('.settings summary').click();
+    await page.evaluate(() => { document.querySelector('.settings').open = false; });
     for (const [name, q, tail] of ayahs) {
       await page.goto(BASE + q);
       await page.waitForSelector('.now__ayah');
@@ -65,16 +82,32 @@ async page => {
       }
       for (const [w, h] of sizes) {
         await page.setViewportSize({ width: w, height: h });
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(250);
         const m = await measure();
-        const bad = m.label.endsWith(tail) ? '' : ` LABEL_MISMATCH(${m.label})`;
+        const mode = words ? 'words' : 'plain';
         const desk = w >= 980 && h >= 600;
-        const state = desk
-          ? (m.noInner ? (m.inside ? 'FULL' : 'FULL-PAGE-SCROLL') : m.inside ? 'INNER-SCROLL' : 'OUT-OF-VIEW')
-          : (m.inline ? 'INLINE-STYLE!' : m.noInner ? 'NATURAL' : 'INNER-SCROLL!');
-        out.push(`${words ? 'words' : 'plain'} ${name} ${w}x${h} font=${m.font} tr=${m.tr} ${state} hOver=${m.hOver} ctl=${m.ctl}${bad}`);
+        const bad = [];
+        if (!m.label.endsWith(tail)) bad.push(`LABEL_MISMATCH(${m.label})`);
+        if (m.hOver) bad.push('H-OVERFLOW');
+        let state;
+        if (desk) {
+          if (m.font !== '40px') bad.push(`FONT(${m.font})`);
+          if (m.docH !== m.vh) bad.push(`PAGE-SCROLL(${m.docH}/${m.vh})`);
+          if (!m.ctl) bad.push('CONTROLS-HIDDEN');
+          if (!m.boxIn) bad.push('BOX-OUT-OF-VIEW');
+          (firstTops[`${w}x${h} ${mode}`] ||= new Set()).add(m.firstTop);
+          state = m.inner ? 'INNER-SCROLL' : 'FULL';
+        } else {
+          if (m.inline) bad.push('INLINE-STYLE');
+          if (m.inner) bad.push('INNER-SCROLL');
+          state = 'NATURAL';
+        }
+        if (bad.length) problems.push(`${mode} ${name} ${w}x${h}: ${bad.join(' ')}`);
+        out.push(`${mode} ${name} ${w}x${h} font=${m.font} ${state} boxH=${m.boxH} rows=${m.rows} fit=${m.rowsFit} firstTop=${m.firstTop}${bad.length ? ' !' + bad.join(',') : ''}`);
       }
     }
   }
+  for (const [k, v] of Object.entries(firstTops)) if (v.size > 1) problems.push(`first row offset differs at ${k}: ${[...v].join(',')}`);
+  out.push(problems.length ? 'PROBLEMS\n' + problems.join('\n') : 'ALL CHECKS PASSED');
   return out.join('\n');
 }
