@@ -13,6 +13,7 @@ import {
   surahMeta,
   type RangeEnd,
 } from './range';
+import { useFitFont } from './fit';
 import { hasTimings } from './words';
 import './tadreej.css';
 
@@ -59,6 +60,12 @@ export default function TadreejPlayer() {
   // Follow the audio clock while words are on screen. The engine emits once
   // per ayah, which is too coarse to track a word.
   const hasWords = Boolean(ui?.words);
+  const ayahRef = useRef<HTMLParagraphElement>(null);
+  useFitFont(ayahRef, [Boolean(ui), ui?.ayahText, ui?.words, hasWords]);
+  // Keep the sounding word in view when the ayah is too long to fit.
+  useEffect(() => {
+    ayahRef.current?.querySelector('.word.is-active')?.scrollIntoView({ block: 'nearest' });
+  }, [activeWord]);
   useEffect(() => {
     if (!ui?.playing || !hasWords) return;
     let frame = requestAnimationFrame(function tick() {
@@ -184,7 +191,7 @@ export default function TadreejPlayer() {
             </div>
 
             {ui.words ? (
-              <p className="now__ayah now__ayah--words" dir="rtl" lang="ar">
+              <p ref={ayahRef} className="now__ayah now__ayah--words" dir="rtl" lang="ar">
                 {ui.words.map((w, i) => (
                   <span key={i} className={`word${ui.meterPos >= 0 && w.pos > 0 && w.pos === activeWord ? ' is-active' : ''}`}>
                     <span className="word__ar">{w.ar}</span>
@@ -193,7 +200,7 @@ export default function TadreejPlayer() {
                 ))}
               </p>
             ) : (
-              <p className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
+              <p ref={ayahRef} className="now__ayah" dir="rtl" lang="ar">{ui.ayahText}</p>
             )}
 
             <div className="now__progress">
