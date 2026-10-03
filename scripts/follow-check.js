@@ -5,6 +5,8 @@
 // Settings blocks it, desk mode scrolls the box and never the page, and a one-ayah loop restarts at 0.
 async page => {
   const BASE = 'http://localhost:5199/';
+  // The drive setup sheet opens on a first visit and blocks the follow. Mark it seen.
+  await page.addInitScript(() => { try { localStorage.setItem('tadreej.driveSetupSeen', '1'); } catch { /* noop */ } });
   const results = [];
   const check = (name, ok, detail = '') => results.push(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' (' + detail + ')' : ''}`);
   const state = () => page.evaluate(() => {

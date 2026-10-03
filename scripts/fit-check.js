@@ -5,6 +5,8 @@
 // Other viewports must be untouched (NATURAL). Prints a line per case, then a check summary.
 async page => {
   const BASE = 'http://localhost:5199/';
+  // The drive setup sheet opens on a first visit and covers the page. Mark it seen.
+  await page.addInitScript(() => { try { localStorage.setItem('tadreej.driveSetupSeen', '1'); } catch { /* noop */ } });
   const sizes = [[1920,1080],[1920,945],[1728,990],[2560,1440],[1536,864],[1440,900],[1366,768],[1280,720],[1024,768],[768,1024],[430,932],[390,844],[375,667],[360,640],[390,664],[375,553],[360,560],[844,390],[1180,500],[980,680],[1280,680],[980,600]];
   // [name, query that shows the ayah's page, tail of the on-screen "Surah · Ayah N" label]
   const ayahs = [

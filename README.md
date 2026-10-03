@@ -30,6 +30,23 @@ Tadreej runs in the browser and installs as an app on your phone. Playback conti
 | `?mode=loop` or `?mode=stepped` | That mode |
 | `?autoplay=1` | Starts playing at once, where the browser allows it |
 
+## Play when you start driving
+
+The app shows these steps on the first visit, and again under Settings.
+
+Set this up once on your iPhone. Then Tadreej opens each time your phone connects to your vehicle's Bluetooth.
+
+1. Open the Shortcuts app and tap Automation.
+2. Tap +, then choose Bluetooth. If you use CarPlay, choose CarPlay instead.
+3. Pick your vehicle, then choose Run Immediately.
+4. Tap Next, then New Blank Automation.
+5. Add the Open URLs action and paste this link: `https://tadreej.samad.sh/?autoplay=1`
+6. Tap Done.
+
+The link opens Tadreej in Safari, on the page you last played there. A locked iPhone waits until you unlock it. iPhone blocks sound until you touch the screen, so tap once to start.
+
+On Android, an automation app such as MacroDroid can open the same link when Bluetooth connects.
+
 ## Feedback
 
 To report a bug or suggest a feature, tap **Feedback** at the bottom of the app, then choose one. Each choice opens a short form on GitHub. You can also [open an issue](https://github.com/samadhusain/tadreej/issues/new/choose) from this repo. Both ways need a free GitHub account.
