@@ -3,6 +3,7 @@ import { HAS_EXTRA_AUDIO, RECITERS, TadreejEngine, type UiState } from './engine
 import { footerCredits } from './credits';
 import FeedbackSheet from './FeedbackSheet';
 import DriveSetupSheet from './DriveSetupSheet';
+import NumberField from './NumberField';
 import { markDriveSetupSeen, shouldShowDriveSetup } from './driveSetup';
 import {
   TOTAL_PAGES,
@@ -289,28 +290,28 @@ export default function TadreejPlayer() {
 
                 <label className="field">
                   <span>Reps per step</span>
-                  <input
-                    type="number" min={1} max={9} inputMode="numeric"
+                  <NumberField
+                    min={1} max={9} integer inputMode="numeric"
                     value={settings.reps}
-                    onChange={(e) => engine?.updateSettings({ reps: Math.min(9, Math.max(1, parseInt(e.target.value, 10) || 1)) })}
+                    onCommit={(reps) => engine?.updateSettings({ reps })}
                   />
                 </label>
 
                 <label className="field">
                   <span>Pause between steps <em>(sec)</em></span>
-                  <input
-                    type="number" min={0} max={15} step={0.5} inputMode="decimal"
+                  <NumberField
+                    min={0} max={15} step={0.5} inputMode="decimal"
                     value={settings.stepPause}
-                    onChange={(e) => engine?.updateSettings({ stepPause: Math.min(15, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                    onCommit={(stepPause) => engine?.updateSettings({ stepPause })}
                   />
                 </label>
 
                 <label className="field">
                   <span>Gap between ayahs <em>(sec)</em></span>
-                  <input
-                    type="number" min={0} max={5} step={0.1} inputMode="decimal"
+                  <NumberField
+                    min={0} max={5} step={0.1} inputMode="decimal"
                     value={settings.ayahGap}
-                    onChange={(e) => engine?.updateSettings({ ayahGap: Math.min(5, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                    onCommit={(ayahGap) => engine?.updateSettings({ ayahGap })}
                   />
                 </label>
 
@@ -392,11 +393,11 @@ export default function TadreejPlayer() {
             <div className="sheet__pane" role="tabpanel" aria-labelledby="tab-page" hidden={tab !== 'page'}>
               <div className="pagejump">
                 <button className="step-btn" aria-label="Previous page" onClick={() => setPgInput((p) => Math.max(1, p - 1))}>−</button>
-                <input
+                <NumberField
                   className="pagejump__input"
-                  type="number" min={1} max={604} inputMode="numeric" aria-label="Page number"
+                  min={1} max={604} integer inputMode="numeric" aria-label="Page number"
                   value={pgInput}
-                  onChange={(e) => setPgInput(Math.min(604, Math.max(1, parseInt(e.target.value, 10) || 1)))}
+                  onCommit={setPgInput}
                 />
                 <button className="step-btn" aria-label="Next page" onClick={() => setPgInput((p) => Math.min(604, p + 1))}>+</button>
               </div>
@@ -422,11 +423,11 @@ export default function TadreejPlayer() {
               <p className="range-cap">Start from page</p>
               <div className="pagejump">
                 <button className="step-btn" aria-label="Previous start page" onClick={() => setRangeFrom((p) => Math.max(1, p - 1))}>−</button>
-                <input
+                <NumberField
                   className="pagejump__input"
-                  type="number" min={1} max={TOTAL_PAGES} inputMode="numeric" aria-label="Start page"
+                  min={1} max={TOTAL_PAGES} integer inputMode="numeric" aria-label="Start page"
                   value={rangeFrom}
-                  onChange={(e) => setRangeFrom(Math.min(TOTAL_PAGES, Math.max(1, parseInt(e.target.value, 10) || 1)))}
+                  onCommit={setRangeFrom}
                 />
                 <button className="step-btn" aria-label="Next start page" onClick={() => setRangeFrom((p) => Math.min(TOTAL_PAGES, p + 1))}>+</button>
               </div>
@@ -449,11 +450,11 @@ export default function TadreejPlayer() {
               {rangeEnd === 'page' && (
                 <div className="range-to">
                   <button className="step-btn step-btn--sm" aria-label="Previous end page" onClick={() => setRangeSpan((s) => Math.max(0, s - 1))}>−</button>
-                  <input
+                  <NumberField
                     className="pagejump__input pagejump__input--sm"
-                    type="number" min={rangeFrom} max={TOTAL_PAGES} inputMode="numeric" aria-label="End page"
+                    min={rangeFrom} max={TOTAL_PAGES} integer inputMode="numeric" aria-label="End page"
                     value={rangeTo}
-                    onChange={(e) => setRangeSpan(Math.min(TOTAL_PAGES, Math.max(rangeFrom, parseInt(e.target.value, 10) || rangeFrom)) - rangeFrom)}
+                    onCommit={(to) => setRangeSpan(to - rangeFrom)}
                   />
                   <button className="step-btn step-btn--sm" aria-label="Next end page" onClick={() => setRangeSpan((s) => Math.min(TOTAL_PAGES - rangeFrom, s + 1))}>+</button>
                 </div>
