@@ -30,9 +30,23 @@ Tadreej runs in the browser and installs as an app on your phone. Playback conti
 | `?mode=loop` or `?mode=stepped` | That mode |
 | `?autoplay=1` | Starts playing at once, where the browser allows it |
 
+## Add to Home Screen
+
+The app shows these steps on the first visit from a phone, and under Settings on any device. It hides this page when the app already runs from the Home Screen.
+
+Tadreej then opens in full screen, like an app.
+
+1. In Safari, tap the Share button.
+2. Scroll down and tap Add to Home Screen.
+3. Tap Add.
+
+On Android, open the Chrome menu and tap Add to Home screen.
+
+On iPhone, the Home Screen app and Safari each keep their own page and settings. The drive link opens Safari.
+
 ## Play when you start driving
 
-The app shows these steps on the first visit from a phone, and under Settings on any device.
+The app shows this page after the Home Screen page on the first visit from a phone, and under Settings on any device. Tap Skip to close either page.
 
 Set this up once on your iPhone. Then Tadreej opens each time your phone connects to your vehicle's Bluetooth.
 

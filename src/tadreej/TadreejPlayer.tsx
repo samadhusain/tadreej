@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HAS_EXTRA_AUDIO, RECITERS, TadreejEngine, type UiState } from './engine';
 import { footerCredits } from './credits';
 import FeedbackSheet from './FeedbackSheet';
-import DriveSetupSheet from './DriveSetupSheet';
+import SetupSheet from './SetupSheet';
 import NumberField from './NumberField';
 import { markDriveSetupSeen, shouldShowDriveSetup } from './driveSetup';
+import { firstVisitPages, runsFromHomeScreen, type SetupPage } from './homeScreenSetup';
 import {
   TOTAL_PAGES,
   TOTAL_SURAHS,
@@ -49,18 +50,32 @@ export default function TadreejPlayer() {
   const [rangeSpan, setRangeSpan] = useState(0);
   const rangeTo = Math.min(TOTAL_PAGES, rangeFrom + rangeSpan);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  // Opens by itself on the first visit from a phone. The initializer has no side effect:
-  // the seen flag is set on close.
-  const [driveSetupOpen, setDriveSetupOpen] = useState(() => {
+  // True when the app already runs from the Home Screen. Reading `matchMedia` or `navigator` can throw.
+  const [onHomeScreen] = useState(() => {
     try {
-      return shouldShowDriveSetup(localStorage, new URLSearchParams(window.location.search), navigator.userAgent);
+      return runsFromHomeScreen(
+        window.matchMedia('(display-mode: standalone)').matches,
+        (navigator as Navigator & { standalone?: boolean }).standalone,
+      );
     } catch {
-      return false; // reading `localStorage` itself can throw
+      return false;
     }
   });
-  const closeDriveSetup = () => {
+  // The setup pages to show, or null when closed. It opens by itself on the first visit from a phone.
+  // The initializer has no side effect: the seen flag is set on close.
+  const [setupPages, setSetupPages] = useState<SetupPage[] | null>(() => {
+    try {
+      return shouldShowDriveSetup(localStorage, new URLSearchParams(window.location.search), navigator.userAgent)
+        ? firstVisitPages(onHomeScreen)
+        : null;
+    } catch {
+      return null; // reading `localStorage` itself can throw
+    }
+  });
+  const setupOpen = setupPages !== null;
+  const closeSetup = () => {
     try { markDriveSetupSeen(localStorage); } catch { /* noop: reading `localStorage` itself can throw */ }
-    setDriveSetupOpen(false);
+    setSetupPages(null);
   };
   // The word sounding now, by its number in the ayah. 0 is none.
   const [activeWord, setActiveWord] = useState(0);
@@ -86,7 +101,7 @@ export default function TadreejPlayer() {
   // because ui.words is a fresh array on every emit.
   useAyahScroll(ayahRef, `${ui?.ayahText ?? ''}|${hasWords}`, shownWord, {
     playing: Boolean(ui?.playing),
-    sheetOpen: sheetOpen || feedbackOpen || driveSetupOpen,
+    sheetOpen: sheetOpen || feedbackOpen || setupOpen,
     gateVisible: Boolean(ui?.gateVisible),
   });
 
@@ -133,8 +148,8 @@ export default function TadreejPlayer() {
         if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); eng.dismissGateAndPlay(); }
         return;
       }
-      if (sheetOpen || feedbackOpen || driveSetupOpen) {
-        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); setFeedbackOpen(false); if (driveSetupOpen) closeDriveSetup(); }
+      if (sheetOpen || feedbackOpen || setupOpen) {
+        if (e.key === 'Escape') { e.preventDefault(); setSheetOpen(false); setFeedbackOpen(false); if (setupOpen) closeSetup(); }
         return;
       }
       switch (e.key) {
@@ -151,7 +166,7 @@ export default function TadreejPlayer() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetOpen, feedbackOpen, driveSetupOpen, ui?.gateVisible]);
+  }, [sheetOpen, feedbackOpen, setupOpen, ui?.gateVisible]);
 
   function openSheet() {
     if (!settings) return;
@@ -385,7 +400,12 @@ export default function TadreejPlayer() {
                   <span>Highlight the word being recited <em>(the view follows it)</em></span>
                 </label>
 
-                <button className="settings__drive" aria-haspopup="dialog" onClick={() => setDriveSetupOpen(true)}>
+                {!onHomeScreen && (
+                  <button className="settings__drive" aria-haspopup="dialog" onClick={() => setSetupPages(['home'])}>
+                    Add to Home Screen
+                  </button>
+                )}
+                <button className="settings__drive" aria-haspopup="dialog" onClick={() => setSetupPages(['drive'])}>
                   Play when you start driving
                 </button>
               </div>
@@ -573,7 +593,7 @@ export default function TadreejPlayer() {
         {feedbackOpen && <FeedbackSheet ui={ui} reciterName={reciterName} onClose={() => setFeedbackOpen(false)} />}
 
         {/* ───────── Drive setup sheet ───────── */}
-        {driveSetupOpen && <DriveSetupSheet onClose={closeDriveSetup} />}
+        {setupPages && <SetupSheet pages={setupPages} onClose={closeSetup} />}
 
         {/* ───────── Tap-to-start overlay (autoplay blocked by iOS) ───────── */}
         <div className="gate" hidden={!ui.gateVisible} onClick={() => engine?.dismissGateAndPlay()}>

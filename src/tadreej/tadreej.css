@@ -601,6 +601,12 @@
 
 .tadreej-root .drivesetup__close{ display: block; width: 100%; margin-top: 16px; }
 
+/* Skip or Close, at the top right of every page. */
+.tadreej-root .drivesetup__dismiss{
+  display: block; margin: -8px 0 0 auto; min-width: 44px; min-height: 44px; padding: 10px 8px;
+  font-size: 14px; font-weight: 600; color: var(--muted);
+}
+
 
 /* ───────── Tap-to-start gate (autoplay fallback) ───────── */
 .tadreej-root .gate{ position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
