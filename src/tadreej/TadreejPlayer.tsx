@@ -49,11 +49,11 @@ export default function TadreejPlayer() {
   const [rangeSpan, setRangeSpan] = useState(0);
   const rangeTo = Math.min(TOTAL_PAGES, rangeFrom + rangeSpan);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  // Opens by itself on the first visit. The initializer has no side effect:
+  // Opens by itself on the first visit from a phone. The initializer has no side effect:
   // the seen flag is set on close.
   const [driveSetupOpen, setDriveSetupOpen] = useState(() => {
     try {
-      return shouldShowDriveSetup(localStorage, new URLSearchParams(window.location.search));
+      return shouldShowDriveSetup(localStorage, new URLSearchParams(window.location.search), navigator.userAgent);
     } catch {
       return false; // reading `localStorage` itself can throw
     }

@@ -32,7 +32,7 @@ Tadreej runs in the browser and installs as an app on your phone. Playback conti
 
 ## Play when you start driving
 
-The app shows these steps on the first visit, and again under Settings.
+The app shows these steps on the first visit from a phone, and under Settings on any device.
 
 Set this up once on your iPhone. Then Tadreej opens each time your phone connects to your vehicle's Bluetooth.
 

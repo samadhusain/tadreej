@@ -11,24 +11,53 @@ const broken = {
   setItem: () => { throw new Error('blocked'); },
 };
 
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+const ANDROID_PHONE = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36';
+const ANDROID_TABLET = 'Mozilla/5.0 (Linux; Android 14; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+const MAC_SAFARI = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15';
+const WINDOWS_CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+// Modern iPads report as a Mac.
+const IPAD = MAC_SAFARI;
+
 describe('shouldShowDriveSetup', () => {
   it('shows on a first visit', () => {
-    expect(shouldShowDriveSetup(memory(), q(''))).toBe(true);
+    expect(shouldShowDriveSetup(memory(), q(''), IPHONE)).toBe(true);
   });
   it('stays hidden after the listener closes it', () => {
     const storage = memory();
     markDriveSetupSeen(storage);
-    expect(shouldShowDriveSetup(storage, q(''))).toBe(false);
+    expect(shouldShowDriveSetup(storage, q(''), IPHONE)).toBe(false);
   });
   it('stays hidden on the drive link, so it never covers playback', () => {
-    expect(shouldShowDriveSetup(memory(), q('autoplay=1'))).toBe(false);
-    expect(shouldShowDriveSetup(memory(), q('play=1'))).toBe(false);
+    expect(shouldShowDriveSetup(memory(), q('autoplay=1'), IPHONE)).toBe(false);
+    expect(shouldShowDriveSetup(memory(), q('play=1'), IPHONE)).toBe(false);
   });
   it('shows when autoplay is not 1', () => {
-    expect(shouldShowDriveSetup(memory(), q('autoplay=0'))).toBe(true);
+    expect(shouldShowDriveSetup(memory(), q('autoplay=0'), IPHONE)).toBe(true);
   });
   it('stays hidden when storage throws', () => {
-    expect(shouldShowDriveSetup(broken, q(''))).toBe(false);
+    expect(shouldShowDriveSetup(broken, q(''), IPHONE)).toBe(false);
+  });
+  it('shows on an iPhone', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), IPHONE)).toBe(true);
+  });
+  it('shows on an Android phone', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), ANDROID_PHONE)).toBe(true);
+  });
+  it('stays hidden on a Mac desktop', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), MAC_SAFARI)).toBe(false);
+  });
+  it('stays hidden on a Windows desktop', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), WINDOWS_CHROME)).toBe(false);
+  });
+  it('stays hidden on an iPad', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), IPAD)).toBe(false);
+  });
+  it('stays hidden on an Android tablet', () => {
+    expect(shouldShowDriveSetup(memory(), q(''), ANDROID_TABLET)).toBe(false);
+  });
+  it('stays hidden on the drive link from a phone', () => {
+    expect(shouldShowDriveSetup(memory(), q('autoplay=1'), ANDROID_PHONE)).toBe(false);
   });
 });
 

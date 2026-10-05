@@ -1,7 +1,7 @@
 /* ============================================================
    Tadreej — the drive setup screen.
    It gives the steps that make Tadreej play when the phone connects
-   to the vehicle. It opens by itself on the first visit, once.
+   to the vehicle. It opens by itself on the first visit from a phone, once.
    ============================================================ */
 
 const LS_DRIVE_SETUP_SEEN = 'tadreej.driveSetupSeen';
@@ -26,8 +26,20 @@ export const DRIVE_SETUP_NOTES = [
   'On Android, an automation app such as MacroDroid can open the same link when Bluetooth connects.',
 ];
 
-/** False on the drive link itself, and when storage cannot remember the answer. */
-export function shouldShowDriveSetup(storage: Pick<Storage, 'getItem'>, query: URLSearchParams): boolean {
+// Only phones. The steps are phone steps, so tablets and desktops stay out.
+// Android tablets send `Android` without `Mobile`.
+const PHONE_USER_AGENT = /iPhone|Android.+Mobile/;
+
+/**
+ * True on the first visit from a phone. False on any other device, on the drive
+ * link itself, and when storage cannot remember the answer.
+ */
+export function shouldShowDriveSetup(
+  storage: Pick<Storage, 'getItem'>,
+  query: URLSearchParams,
+  userAgent: string,
+): boolean {
+  if (!PHONE_USER_AGENT.test(userAgent)) return false;
   if (query.get('autoplay') === '1' || query.get('play') === '1') return false;
   try {
     return !storage.getItem(LS_DRIVE_SETUP_SEEN);
