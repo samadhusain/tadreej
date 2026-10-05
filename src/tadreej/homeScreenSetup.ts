@@ -40,6 +40,6 @@ export function dismissLabel(pageCount: number): 'Skip' | 'Close' {
 }
 
 /** The bottom button: Next on every page but the last, Got it on the last. */
-export function primaryLabel(pageCount: number, index: number): 'Next' | 'Got it' {
-  return index < pageCount - 1 ? 'Next' : 'Got it';
+export function primaryLabel(last: boolean): 'Next' | 'Got it' {
+  return last ? 'Got it' : 'Next';
 }

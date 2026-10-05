@@ -592,7 +592,7 @@ export default function TadreejPlayer() {
         {/* ───────── Feedback sheet ───────── */}
         {feedbackOpen && <FeedbackSheet ui={ui} reciterName={reciterName} onClose={() => setFeedbackOpen(false)} />}
 
-        {/* ───────── Drive setup sheet ───────── */}
+        {/* ───────── Setup sheet ───────── */}
         {setupPages && <SetupSheet pages={setupPages} onClose={closeSetup} />}
 
         {/* ───────── Tap-to-start overlay (autoplay blocked by iOS) ───────── */}

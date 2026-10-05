@@ -574,7 +574,7 @@
 }
 
 
-/* ───────── Drive setup sheet ─────────
+/* ───────── Setup sheet ─────────
    The same sheet and the same title and lead as the feedback sheet, with a
    numbered list. The panel scrolls when the steps are taller than the screen. */
 .tadreej-root .drivesetup{ max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; }

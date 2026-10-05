@@ -46,7 +46,7 @@ On iPhone, the Home Screen app and Safari each keep their own page and settings.
 
 ## Play when you start driving
 
-The app shows this page after the Home Screen page on the first visit from a phone, and under Settings on any device. Tap Skip to close either page.
+The app shows this page after the Home Screen page on the first visit from a phone, and under Settings on any device. Tap Skip or Close at the top right to close the page.
 
 Set this up once on your iPhone. Then Tadreej opens each time your phone connects to your vehicle's Bluetooth.
 

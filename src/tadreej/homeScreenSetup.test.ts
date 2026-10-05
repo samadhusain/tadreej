@@ -54,10 +54,9 @@ describe('dismissLabel', () => {
 
 describe('primaryLabel', () => {
   it('says Next on a page that is not the last', () => {
-    expect(primaryLabel(2, 0)).toBe('Next');
+    expect(primaryLabel(false)).toBe('Next');
   });
   it('says Got it on the last page', () => {
-    expect(primaryLabel(2, 1)).toBe('Got it');
-    expect(primaryLabel(1, 0)).toBe('Got it');
+    expect(primaryLabel(true)).toBe('Got it');
   });
 });
