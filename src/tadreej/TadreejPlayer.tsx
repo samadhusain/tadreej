@@ -26,6 +26,9 @@ const DESK_QUERY = '(min-width: 980px) and (min-height: 680px)';
 
 /* Allowed reps per step. The label and the field limits both read this. */
 const REPS = { min: 1, max: 9 };
+/* Allowed pause between steps and gap between ayahs, in seconds. Label and field limits read these. */
+const STEP_PAUSE = { min: 0, max: 15 };
+const AYAH_GAP = { min: 0, max: 5 };
 
 /* Verse meter gradient — lime → deep green by position */
 function lerpColor(a: string, b: string, t: number) {
@@ -353,18 +356,18 @@ export default function TadreejPlayer() {
                 </label>
 
                 <label className="field">
-                  <span>Pause between steps <em>(sec)</em></span>
+                  <span>Pause between steps <em>({STEP_PAUSE.min}–{STEP_PAUSE.max} sec)</em></span>
                   <NumberField
-                    min={0} max={15} step={0.5} inputMode="decimal"
+                    min={STEP_PAUSE.min} max={STEP_PAUSE.max} step={0.5} inputMode="decimal"
                     value={settings.stepPause}
                     onCommit={(stepPause) => engine?.updateSettings({ stepPause })}
                   />
                 </label>
 
                 <label className="field">
-                  <span>Gap between ayahs <em>(sec)</em></span>
+                  <span>Gap between ayahs <em>({AYAH_GAP.min}–{AYAH_GAP.max} sec)</em></span>
                   <NumberField
-                    min={0} max={5} step={0.1} inputMode="decimal"
+                    min={AYAH_GAP.min} max={AYAH_GAP.max} step={0.1} inputMode="decimal"
                     value={settings.ayahGap}
                     onCommit={(ayahGap) => engine?.updateSettings({ ayahGap })}
                   />
