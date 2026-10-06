@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { HAS_EXTRA_AUDIO, RECITERS, TadreejEngine, type UiState } from './engine';
+import { AYAH_GAP, HAS_EXTRA_AUDIO, REPS, RECITERS, STEP_PAUSE, TadreejEngine, type UiState } from './engine';
 import { footerCredits } from './credits';
 import FeedbackSheet from './FeedbackSheet';
 import SetupSheet from './SetupSheet';
@@ -23,12 +23,6 @@ import './tadreej.css';
 
 /* Desk mode: the same query as the desk block in tadreej.css. */
 const DESK_QUERY = '(min-width: 980px) and (min-height: 680px)';
-
-/* Allowed reps per step. The label and the field limits both read this. */
-const REPS = { min: 1, max: 9 };
-/* Allowed pause between steps and gap between ayahs, in seconds. Label and field limits read these. */
-const STEP_PAUSE = { min: 0, max: 15 };
-const AYAH_GAP = { min: 0, max: 5 };
 
 /* Verse meter gradient — lime → deep green by position */
 function lerpColor(a: string, b: string, t: number) {

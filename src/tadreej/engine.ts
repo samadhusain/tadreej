@@ -71,9 +71,25 @@ const DEFAULTS: TadreejSettings = {
   reps: 1, stepPause: 1, ayahGap: 0.4, repeatPage: true, wordByWord: true, highlight: true,
 };
 
-/** Saved settings laid over the defaults, so a key added later loads at its default. */
+/** Allowed reps per step. The label, the field limits and the loader read this. */
+export const REPS = { min: 1, max: 9 };
+/** Allowed pause between steps and gap between ayahs, in seconds. The label, the field limits and the loader read these. */
+export const STEP_PAUSE = { min: 0, max: 15 };
+export const AYAH_GAP = { min: 0, max: 5 };
+
+/** A number moved to the nearest limit. Not a finite number (a string, null, NaN, Infinity): the default. */
+function limit(value: unknown, range: { min: number; max: number }, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.min(range.max, Math.max(range.min, value));
+}
+
+/** Saved settings laid over the defaults, so a key added later loads at its default. Reps, pauses and gaps load inside their limits. */
 export function mergeSettings(saved: Partial<TadreejSettings>): TadreejSettings {
-  return { ...DEFAULTS, ...saved };
+  const merged = { ...DEFAULTS, ...saved };
+  merged.reps = Math.trunc(limit(merged.reps, REPS, DEFAULTS.reps));
+  merged.stepPause = limit(merged.stepPause, STEP_PAUSE, DEFAULTS.stepPause);
+  merged.ayahGap = limit(merged.ayahGap, AYAH_GAP, DEFAULTS.ayahGap);
+  return merged;
 }
 
 /** Everything the UI needs to render, pushed on every change. */
