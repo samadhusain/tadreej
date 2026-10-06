@@ -24,6 +24,9 @@ import './tadreej.css';
 /* Desk mode: the same query as the desk block in tadreej.css. */
 const DESK_QUERY = '(min-width: 980px) and (min-height: 680px)';
 
+/* Allowed reps per step. The label and the field limits both read this. */
+const REPS = { min: 1, max: 9 };
+
 /* Verse meter gradient — lime → deep green by position */
 function lerpColor(a: string, b: string, t: number) {
   const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16);
@@ -341,9 +344,9 @@ export default function TadreejPlayer() {
                 </label>
 
                 <label className="field">
-                  <span>Reps per step</span>
+                  <span>Reps per step <em>({REPS.min}–{REPS.max})</em></span>
                   <NumberField
-                    min={1} max={9} integer inputMode="numeric"
+                    min={REPS.min} max={REPS.max} integer inputMode="numeric"
                     value={settings.reps}
                     onCommit={(reps) => engine?.updateSettings({ reps })}
                   />
